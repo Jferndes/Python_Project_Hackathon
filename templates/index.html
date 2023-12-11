@@ -1,27 +1,55 @@
-{% extends "layout/base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des contacts et groupes</title>
+</head>
+<body>
+    <h1>Liste des contacts</h1>
+    <table border="1">
+        <tr>
+            <th>ID Contact</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Date de naissance</th>
+            <th>Photo de profil</th>
+            <th>Created Date</th>
+            <th>Updated Date</th>
+        </tr>
+        {% for contact in contacts %}
+            <tr>
+                <td>{{ contact[3] }}</td>
+                <td>{{ contact[0] }}</td>
+                <td>{{ contact[1] }}</td>
+                <td>{{ contact[2] }}</td>
+                <td>{{ contact[4] }}</td>
+                <td>{{ contact[5] }}</td>
+                <td>{{ contact[6] }}</td>
+                <td>{{ contact[7] }}</td>
+                <td>{{ contact[8] }}</td>
+            </tr>
+        {% endfor %}
+    </table>
 
-{% block title %}Page d'accueil{% endblock %}
-
-{% block content %}
-    {% include 'layout/navbar.html' %}
-
-    <div class="container mt-5">
-        <h2 class="mb-5 text-center">Contrôle de Python</h2>
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Question 1 :</h5>
-                <p class="card-text">Description de la question 1. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                <a href="/page1" class="btn btn-primary">Répondre</a>
-            </div>
-        </div>
-
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5 class="card-title">Question 2 :</h5>
-                <p class="card-text">Description de la question 2. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                <a href="/page2" class="btn btn-primary">Répondre</a>
-            </div>
-        </div>
-
-    </div>
-{% endblock %}
+    <h1>Liste des groupes</h1>
+    <table border="1">
+        <tr>
+            <th>ID Groupe</th>
+            <th>Nom du groupe</th>
+            <th>Photo du groupe</th>
+            <th>Created Date</th>
+        </tr>
+        {% for groupe in groupes %}
+            <tr>
+                <td>{{ groupe[0] }}</td>
+                <td>{{ groupe[1] }}</td>
+                <td>{{ groupe[2] }}</td>
+                <td>{{ groupe[3] }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
