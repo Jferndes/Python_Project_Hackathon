@@ -1,0 +1,24 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Liste des contacts{% endblock %}
+
+{% block content %}
+    {% include 'layout/navbar.html' %}
+        <h1>Liste des groupes</h1>
+        <tr>
+            <th>ID Groupe</th>
+            <th>Nom du groupe</th>
+            <th>Photo du groupe</th>
+            <th>Created Date</th>
+        </tr>
+        {% for groupe in groupes %}
+            <tr>
+                <td>{{ groupe[0] }}</td>
+                <td>{{ groupe[1] }}</td>
+                <td>{{ groupe[2] }}</td>
+                <td>{{ groupe[3] }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+{% endblock %}

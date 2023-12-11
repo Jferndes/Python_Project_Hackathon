@@ -1,0 +1,35 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Liste des contacts{% endblock %}
+
+{% block content %}
+    {% include 'layout/navbar.html' %}
+
+<h1>Liste des contacts</h1>
+        <tr>
+            <th>ID Contact</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Date de naissance</th>
+            <th>Photo de profil</th>
+            <th>Created Date</th>
+            <th>Updated Date</th>
+        </tr>
+        {% for contact in contacts %}
+            <tr>
+                <td>{{ contact[3] }}</td>
+                <td>{{ contact[0] }}</td>
+                <td>{{ contact[1] }}</td>
+                <td>{{ contact[2] }}</td>
+                <td>{{ contact[4] }}</td>
+                <td>{{ contact[5] }}</td>
+                <td>{{ contact[6] }}</td>
+                <td>{{ contact[7] }}</td>
+                <td>{{ contact[8] }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+{% endblock %}

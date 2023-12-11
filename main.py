@@ -9,8 +9,8 @@ def connect_db():
     return sqlite3.connect('hackathon.sqlite')
 
 # Page d'accueil qui affiche les données des tables Contact et Groupe
-@app.route("/")
-def index():
+@app.route("/liste_contacts")
+def liste_contacts():
     # Connexion à la base de données
     connection = connect_db()
     cursor = connection.cursor()
@@ -19,19 +19,31 @@ def index():
     cursor.execute("SELECT * FROM Contact")
     contacts = cursor.fetchall()
 
+    # Fermeture de la connexion à la base de données
+    connection.close()
+
+    return render_template('liste_contacts.html', contacts=contacts)
+
+# Définir la route pour afficher la liste des groupes
+@app.route("/liste_groupes")
+def liste_groupes():
+    # Connexion à la base de données
+    connection = connect_db()
+    cursor = connection.cursor()
+
     # Récupération des groupes
     cursor.execute("SELECT * FROM Groupe")
     groupes = cursor.fetchall()
-
-    for contact in contacts:
-        print("ID:", contact[0], "Type:", type(contact[0]))
-
 
     # Fermeture de la connexion à la base de données
     connection.close()
 
     # Rendu du modèle avec les données récupérées
-    return render_template('index.html', contacts=contacts, groupes=groupes)
+    return render_template('liste_groupes.html', groupes=groupes)
+
+@app.get("/")
+def index():
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True)
