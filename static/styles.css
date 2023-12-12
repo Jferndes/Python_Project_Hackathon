@@ -12,6 +12,28 @@ h1 {
     margin: auto;
 }
 
+.container {
+    max-width: 500px;
+}
+
+form {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    font-weight: bold;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+button {
+    width: 100%;
+  
 .arrow {
     display: inline-block;
     width: 0;
