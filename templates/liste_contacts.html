@@ -7,6 +7,10 @@
 
     <h1>Liste des contacts</h1>
 
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" id="searchInput" placeholder="Rechercher...">
+    </div>
+
     <table class="table table-striped" id="contactTable">
         <thead>
             <tr>
@@ -23,7 +27,7 @@
         </thead>
         <tbody>
             {% for contact in contacts %}
-                <tr>
+                <tr class="contact-row">
                     <td>{{ contact[0] }}</td> <!-- ID Contact -->
                     <td>{{ contact[1] }}</td> <!-- Nom -->
                     <td>{{ contact[2] }}</td> <!-- Prénom -->
@@ -39,6 +43,7 @@
     </table>
 
     {% block scripts %}
+        {{ super() }}
         <script>
             $(document).ready(function () {
                 $("#contactTable th").click(function () {
@@ -72,6 +77,16 @@
                 function getCellValue(row, index) {
                     return $(row).children("td").eq(index).text();
                 }
+
+                // Script pour la barre de recherche
+                $("#searchInput").on("input", function () {
+                    var searchText = $(this).val().toLowerCase();
+
+                    $(".contact-row").each(function () {
+                        var rowText = $(this).text().toLowerCase();
+                        $(this).toggle(rowText.includes(searchText));
+                    });
+                });
             });
         </script>
     {% endblock %}

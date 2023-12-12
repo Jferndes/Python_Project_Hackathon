@@ -7,6 +7,10 @@
 
     <h1>Liste des groupes</h1>
 
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" id="searchInput" placeholder="Rechercher...">
+    </div>
+
     <table class="table table-striped" id="groupeTable">
         <thead>
             <tr>
@@ -18,7 +22,7 @@
         </thead>
         <tbody>
             {% for groupe in groupes %}
-                <tr>
+                <tr class="groupe-row">
                     <td>{{ groupe[0] }}</td> <!-- ID Groupe -->
                     <td>{{ groupe[1] }}</td> <!-- Nom du groupe -->
                     <td>{{ groupe[2] }}</td> <!-- Photo du groupe -->
@@ -29,6 +33,7 @@
     </table>
 
     {% block scripts %}
+        {{ super() }}
         <script>
             $(document).ready(function () {
                 $("#groupeTable th").click(function () {
@@ -62,6 +67,16 @@
                 function getCellValue(row, index) {
                     return $(row).children("td").eq(index).text();
                 }
+
+                // Script pour la barre de recherche
+                $("#searchInput").on("input", function () {
+                    var searchText = $(this).val().toLowerCase();
+
+                    $(".groupe-row").each(function () {
+                        var rowText = $(this).text().toLowerCase();
+                        $(this).toggle(rowText.includes(searchText));
+                    });
+                });
             });
         </script>
     {% endblock %}
