@@ -1,24 +1,83 @@
 {% extends "layout/base.html" %}
 
-{% block title %}Liste des contacts{% endblock %}
+{% block title %}Liste des groupes{% endblock %}
 
 {% block content %}
     {% include 'layout/navbar.html' %}
-        <h1>Liste des groupes</h1>
-        <tr>
-            <th>ID Groupe</th>
-            <th>Nom du groupe</th>
-            <th>Photo du groupe</th>
-            <th>Created Date</th>
-        </tr>
-        {% for groupe in groupes %}
+
+    <h1>Liste des groupes</h1>
+
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" id="searchInput" placeholder="Rechercher...">
+    </div>
+
+    <table class="table table-striped" id="groupeTable">
+        <thead>
             <tr>
-                <td>{{ groupe[0] }}</td>
-                <td>{{ groupe[1] }}</td>
-                <td>{{ groupe[2] }}</td>
-                <td>{{ groupe[3] }}</td>
+                <th data-column="0">ID Groupe <span class="arrow"></span></th>
+                <th data-column="1">Nom du groupe <span class="arrow"></span></th>
+                <th data-column="2">Photo du groupe <span class="arrow"></span></th>
+                <th data-column="3">Created Date <span class="arrow"></span></th>
             </tr>
-        {% endfor %}
+        </thead>
+        <tbody>
+            {% for groupe in groupes %}
+                <tr class="groupe-row">
+                    <td>{{ groupe[0] }}</td> <!-- ID Groupe -->
+                    <td>{{ groupe[1] }}</td> <!-- Nom du groupe -->
+                    <td>{{ groupe[2] }}</td> <!-- Photo du groupe -->
+                    <td>{{ groupe[3] }}</td> <!-- Created Date -->
+                </tr>
+            {% endfor %}
+        </tbody>
     </table>
 
+    {% block scripts %}
+        {{ super() }}
+        <script>
+            $(document).ready(function () {
+                $("#groupeTable th").click(function () {
+                    var column = $(this).data("column");
+                    var direction = $(this).hasClass("asc") ? "desc" : "asc";
+
+                    // Retirez toutes les classes "asc" et "desc" des autres colonnes
+                    $("#groupeTable th").removeClass("asc desc");
+                    // Ajoutez la classe asc ou desc à la colonne actuelle
+                    $(this).addClass(direction);
+
+                    // Triez les lignes de la table en fonction de la colonne et de la direction
+                    var tbody = $("#groupeTable tbody");
+                    var rows = tbody.find("tr").toArray().sort(comparer($(this).index(), direction));
+                    tbody.empty().append(rows);
+                });
+
+                function comparer(index, ordre) {
+                    return function (a, b) {
+                        var valA = getCellValue(a, index);
+                        var valB = getCellValue(b, index);
+
+                        if (ordre === "asc") {
+                            return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB);
+                        } else {
+                            return $.isNumeric(valA) && $.isNumeric(valB) ? valB - valA : valB.localeCompare(valA);
+                        }
+                    };
+                }
+
+                function getCellValue(row, index) {
+                    return $(row).children("td").eq(index).text();
+                }
+
+                // Script pour la barre de recherche
+                $("#searchInput").on("input", function () {
+                    var searchText = $(this).val().toLowerCase();
+
+                    $(".groupe-row").each(function () {
+                        var rowText = $(this).text().toLowerCase();
+                        $(this).toggle(rowText.includes(searchText));
+                    });
+                });
+            });
+        </script>
+    {% endblock %}
 {% endblock %}
