@@ -5,31 +5,74 @@
 {% block content %}
     {% include 'layout/navbar.html' %}
 
-<h1>Liste des contacts</h1>
-        <tr>
-            <th>ID Contact</th>
-            <th>Nom</th>
-            <th>Prénom</th>
-            <th>Email</th>
-            <th>Téléphone</th>
-            <th>Date de naissance</th>
-            <th>Photo de profil</th>
-            <th>Created Date</th>
-            <th>Updated Date</th>
-        </tr>
-        {% for contact in contacts %}
+    <h1>Liste des contacts</h1>
+
+    <table class="table table-striped" id="contactTable">
+        <thead>
             <tr>
-                <td>{{ contact[3] }}</td>
-                <td>{{ contact[0] }}</td>
-                <td>{{ contact[1] }}</td>
-                <td>{{ contact[2] }}</td>
-                <td>{{ contact[4] }}</td>
-                <td>{{ contact[5] }}</td>
-                <td>{{ contact[6] }}</td>
-                <td>{{ contact[7] }}</td>
-                <td>{{ contact[8] }}</td>
+                <th data-column="3">ID Contact <span class="arrow"></span></th>
+                <th data-column="0">Nom <span class="arrow"></span></th>
+                <th data-column="1">Prénom <span class="arrow"></span></th>
+                <th data-column="2">Email <span class="arrow"></span></th>
+                <th data-column="4">Téléphone <span class="arrow"></span></th>
+                <th data-column="5">Date de naissance <span class="arrow"></span></th>
+                <th data-column="6">Photo de profil <span class="arrow"></span></th>
+                <th data-column="7">Created Date <span class="arrow"></span></th>
+                <th data-column="8">Updated Date <span class="arrow"></span></th>
             </tr>
-        {% endfor %}
+        </thead>
+        <tbody>
+            {% for contact in contacts %}
+                <tr>
+                    <td>{{ contact[0] }}</td> <!-- ID Contact -->
+                    <td>{{ contact[1] }}</td> <!-- Nom -->
+                    <td>{{ contact[2] }}</td> <!-- Prénom -->
+                    <td>{{ contact[3] }}</td> <!-- Email -->
+                    <td>{{ contact[4] }}</td> <!-- Téléphone -->
+                    <td>{{ contact[5] }}</td> <!-- Date de naissance -->
+                    <td>{{ contact[6] }}</td> <!-- Photo de profil -->
+                    <td>{{ contact[7] }}</td> <!-- Created Date -->
+                    <td>{{ contact[8] }}</td> <!-- Updated Date -->
+                </tr>
+            {% endfor %}
+        </tbody>
     </table>
 
+    {% block scripts %}
+        <script>
+            $(document).ready(function () {
+                $("#contactTable th").click(function () {
+                    var column = $(this).data("column");
+                    var direction = $(this).hasClass("asc") ? "desc" : "asc";
+
+                    // Retirez toutes les classes "asc" et "desc" des autres colonnes
+                    $("#contactTable th").removeClass("asc desc");
+                    // Ajoutez la classe asc ou desc à la colonne actuelle
+                    $(this).addClass(direction);
+
+                    // Triez les lignes de la table en fonction de la colonne et de la direction
+                    var tbody = $("#contactTable tbody");
+                    var rows = tbody.find("tr").toArray().sort(comparer($(this).index(), direction));
+                    tbody.empty().append(rows);
+                });
+
+                function comparer(index, ordre) {
+                    return function (a, b) {
+                        var valA = getCellValue(a, index);
+                        var valB = getCellValue(b, index);
+
+                        if (ordre === "asc") {
+                            return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB);
+                        } else {
+                            return $.isNumeric(valA) && $.isNumeric(valB) ? valB - valA : valB.localeCompare(valA);
+                        }
+                    };
+                }
+
+                function getCellValue(row, index) {
+                    return $(row).children("td").eq(index).text();
+                }
+            });
+        </script>
+    {% endblock %}
 {% endblock %}
