@@ -1,4 +1,6 @@
-from flask import Flask, render_template
+import csv
+import io
+from flask import Flask, render_template, Response
 import sqlite3
 
 app = Flask(__name__)
@@ -40,6 +42,43 @@ def liste_groupes():
 
     # Rendu du modèle avec les données récupérées
     return render_template('liste_groupes.html', groupes=groupes)
+
+# Route pour l'export CSV
+@app.route('/export_csv')
+def export_csv():
+    # Connexion à la base de données
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    # Exemple pour récupérer les données de la table Contact
+    cursor.execute("SELECT * FROM Contact")
+    contacts = cursor.fetchall()
+
+    # Fermeture de la connexion à la base de données
+    connection.close()
+
+    # Générer le contenu CSV
+    csv_content = generate_csv_content(contacts)
+
+    # Retourner le contenu CSV en tant que fichier téléchargeable
+    return Response(
+        csv_content,
+        mimetype="text/csv",
+        headers={"Content-disposition": "attachment; filename=export.csv"}
+    )
+
+def generate_csv_content(data):
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Ajouter les en-têtes CSV si nécessaire
+    # writer.writerow(["Colonne1", "Colonne2", ...])
+
+    # Ajouter les données CSV
+    for row in data:
+        writer.writerow(row)
+
+    return output.getvalue()
 
 @app.get("/")
 def index():
