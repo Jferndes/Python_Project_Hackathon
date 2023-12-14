@@ -1,0 +1,15 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Supprimer le contact{% endblock %}
+
+{% block content %}
+    {% include 'layout/navbar.html' %}
+
+    <h1>Supprimer le contact</h1>
+
+    <form method="POST" action="{{ url_for('delete_contact', contactId=contact[0]) }}">
+        <p>Voulez-vous vraiment supprimer le contact "{{ contact[1] }} {{ contact[2] }}" ?</p>
+        <button type="submit" class="btn btn-danger">Supprimer</button>
+        <a href="{{ url_for('liste_contacts') }}" class="btn btn-secondary">Annuler</a>
+    </form>
+{% endblock %}

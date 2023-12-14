@@ -23,6 +23,7 @@
                 <th data-column="6">Photo de profil <span class="arrow"></span></th>
                 <th data-column="7">Created Date <span class="arrow"></span></th>
                 <th data-column="8">Updated Date <span class="arrow"></span></th>
+                <th>Action</th> <!-- New column for Edit button -->
             </tr>
         </thead>
         <tbody>
@@ -37,6 +38,14 @@
                     <td>{{ contact[6] }}</td> <!-- Photo de profil -->
                     <td>{{ contact[7] }}</td> <!-- Created Date -->
                     <td>{{ contact[8] }}</td> <!-- Updated Date -->
+                    <td>
+                        <a href="{{ url_for('edit_contact', contactId=contact[0]) }}" class="btn btn-primary btn-sm">
+                            Edit
+                        </a>
+                        <a href="{{ url_for('delete_contact', contactId=contact[0]) }}" class="btn btn-danger btn-sm">
+                            Delete
+                        </a>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
