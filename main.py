@@ -1,6 +1,5 @@
 from flask import Flask, render_template, Response, request, redirect, url_for, flash
 from function import *
-from datetime import datetime
 import csv
 import io
 
@@ -49,7 +48,7 @@ def ajouter_contact():
         query = '''
             INSERT INTO Contact (nom, prenom, e_mail, tel, date_naissance, photo_profil, created_date, updated_date)
             VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')
-        '''.format(nom, prenom, email, tel, date_naissance, photo, datetime.now(), datetime.now())
+        '''.format(nom, prenom, email, tel, date_naissance, photo, now(), now())
         action_bdd(query)
 
         # Redirection vers la liste des contacts avec message de confirmation
@@ -93,7 +92,7 @@ def edit_contact(contactId):
                         UPDATE Contact
                         SET nom='{}', prenom='{}', e_mail='{}', tel='{}', date_naissance='{}', photo_profil='{}', updated_date='{}'
                         WHERE id_contact='{}'
-                    '''.format(nom, prenom, email, tel, date_naissance, photo, datetime.now(), contactId)
+                    '''.format(nom, prenom, email, tel, date_naissance, photo, now(), contactId)
             action_bdd(query)
 
             # Message de confirmation
