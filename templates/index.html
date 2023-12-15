@@ -1,19 +1,14 @@
 {% extends "layout/base.html" %}
 
-{% block title %}Page d'accueil{% endblock %}
+{% block title %}Hackathon 2023 - Joël Fernandes et Mathis Bodelot{% endblock %}
 
 {% block content %}
     {% include 'layout/navbar.html' %}
 
     <div class="container mt-5">
-        <h2 class="mb-5 text-center">Projet Hackathon</h2>
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Question 1 :</h5>
-                <p class="card-text">Description de la question 1. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                <a href="/page1" class="btn btn-primary">Répondre</a>
-            </div>
+        <div class="jumbotron">
+            <h1 class="display-4">Hackathon 2023</h1>
+            <p class="lead">Joel Fernandes - Mathis Bodelot</p>
+            <hr class="my-4">
         </div>
-
-    </div>
 {% endblock %}
