@@ -53,7 +53,7 @@ def ajouter_contact():
         action_bdd(query)
 
         # Redirection vers la liste des contacts avec message de confirmation
-        flash("Le contact a été modifié", "success")
+        flash("Le contact a été créé", "success")
         return redirect(url_for('liste_contacts'))
 
     elif request.method == 'GET':
