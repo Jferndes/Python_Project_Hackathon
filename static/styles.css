@@ -8,6 +8,10 @@ h1 {
     color: #333;
 }
 
+p{
+    text-align: center;
+}
+
 .auth-form {
     width: 50%;
     margin: auto;
@@ -34,7 +38,7 @@ label {
 
 button {
     width: 100%;
-  
+}
 .arrow {
     display: inline-block;
     width: 0;
