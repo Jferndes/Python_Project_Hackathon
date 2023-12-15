@@ -1,3 +1,4 @@
+<!-- Page de modification d'un contact  -->
 {% extends "layout/base.html" %}
 
 {% block title %}Liste des contacts{% endblock %}
@@ -6,6 +7,7 @@
         {% include 'layout/navbar.html' %}
         <h1>Edit Contact</h1>
 
+        <!-- Formulaire d'un contact (Avec champs remplie) -->
         <form method="POST" action="{{ url_for('edit_contact', contactId=contact[0]) }}">
             <label for="nom">Nom:</label>
             <input type="text" class="form-control" name="nom" value="{{ contact[1] }}" required><br>
