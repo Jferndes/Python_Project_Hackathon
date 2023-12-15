@@ -1,3 +1,4 @@
+<!-- Page d'affichage de la liste des contacts  -->
 {% extends "layout/base.html" %}
 
 {% block title %}Liste des contacts{% endblock %}
@@ -7,10 +8,23 @@
 
     <h1>Liste des contacts</h1>
 
+    <!-- Message flash (annonce d'une action ) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="alert alert-{{ messages.0.0 }}" role="alert"> <!-- message.0.0 -> catégorie -->
+                {% for category, message in messages %}
+                    {{ message }} </br> <!-- message -> contenue massage -->
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Barre de Recherche -->
     <div class="input-group mb-3">
         <input type="text" class="form-control" id="searchInput" placeholder="Rechercher...">
     </div>
 
+    <!-- Tableau de la liste de contacts -->
     <table class="table table-striped" id="contactTable">
         <thead>
             <tr>
@@ -51,6 +65,7 @@
         </tbody>
     </table>
 
+    <!-- Script JS de la Recherche (Recherche dynamique) -->
     {% block scripts %}
         {{ super() }}
         <script>

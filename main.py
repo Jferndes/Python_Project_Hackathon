@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response, request, redirect, url_for
+from flask import Flask, render_template, Response, request, redirect, url_for, flash
 from function import *
 from datetime import datetime
 import csv
@@ -53,6 +53,7 @@ def ajouter_contact():
         action_bdd(query)
 
         # Redirection vers la liste des contacts avec message de confirmation
+        flash("Le contact a été modifié", "success")
         return redirect(url_for('liste_contacts'))
 
     elif request.method == 'GET':
@@ -61,32 +62,44 @@ def ajouter_contact():
 
 @app.route("/contacts/<int:contactId>/edit", methods=['GET', 'POST'])
 def edit_contact(contactId):
-    if request.method == 'GET':
-        # Récupération du contact
-        query = "SELECT * FROM Contact WHERE id_contact = {}".format(contactId)
-        contact = recup_bdd(query, True)
+    # Récupération du contact
+    query = "SELECT * FROM Contact WHERE id_contact = {}".format(contactId)
+    contact = recup_bdd(query, True)
 
+    if request.method == 'GET':
         if contact:
             return render_template('contactEdit.html', contact=contact)
 
     elif request.method == 'POST':
-        # Récupération des informations du formulaire
-        nom = request.form['nom']
-        prenom = request.form['prenom']
-        email = request.form['email']
-        tel = request.form['tel']
-        date_naissance = request.form['dob']
-        photo = request.form['photo']
+        # Vérification de modification des valeurs
+        i = 1
+        doUpdate = False
+        for key in request.form:
+            if request.form[key] != contact[i]:
+                doUpdate = True
+            i += 1
 
-        # Requête dans la base de données
-        query = '''
-            UPDATE Contact
-            SET nom='{}', prenom='{}', e_mail='{}', tel='{}', date_naissance='{}', photo_profil='{}', updated_date='{}'
-            WHERE id_contact='{}'
-        '''.format(nom, prenom, email, tel, date_naissance, photo, datetime.now(), contactId)
-        action_bdd(query)
+        if doUpdate:
+            # Récupération des informations du formulaire
+            nom = request.form['nom']
+            prenom = request.form['prenom']
+            email = request.form['email']
+            tel = request.form['tel']
+            date_naissance = request.form['dob']
+            photo = request.form['photo']
 
-        # Redirection vers la liste des contacts avec message de confirmation
+            # Requête dans la base de données
+            query = '''
+                        UPDATE Contact
+                        SET nom='{}', prenom='{}', e_mail='{}', tel='{}', date_naissance='{}', photo_profil='{}', updated_date='{}'
+                        WHERE id_contact='{}'
+                    '''.format(nom, prenom, email, tel, date_naissance, photo, datetime.now(), contactId)
+            action_bdd(query)
+
+            # Message de confirmation
+            flash("Le contact a été modifié", "warning")
+
+        # Redirection vers la liste des contacts
         return redirect(url_for('liste_contacts'))
 
 
@@ -106,6 +119,7 @@ def delete_contact(contactId):
         action_bdd(query)
 
         # Redirection vers la liste des contacts avec message de confirmation
+        flash("Le contact a été supprimé", "danger")
         return redirect(url_for('liste_contacts'))
 
 
