@@ -1,0 +1,24 @@
+<!-- Page de modification d'un groupe  -->
+{% extends "layout/base.html" %}
+
+{% block title %}Modification d'un groupe{% endblock %}
+
+{% block content %}
+    {% include 'layout/navbar.html' %}
+    <h1 class="m-5">Edit groupe</h1>
+
+    <div class="container mt-5 mb-5">
+        <!-- Formulaire d'un groupe (Avec champs remplie) -->
+        <form method="POST" action="{{ url_for('edit_groupe', groupeId=groupe[0]) }}">
+            <label for="nom">Nom:</label>
+            <input type="text" class="form-control" name="nom" value="{{ groupe[1] }}" required><br>
+
+            <label for="photo">Photo:</label>
+            <input type="text" class="form-control" name="photo" value="{{ groupe[2] }}" required><br>
+
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </form>
+        <br>
+        <a href="{{ url_for('liste_groupes') }}" class="btn btn-secondary">Retour à la liste des groupes</a>
+    </div>
+{% endblock %}

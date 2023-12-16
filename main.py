@@ -11,17 +11,6 @@ app.secret_key = 'test'
 def index():
     return render_template('index.html')
 
- 
-# Définir la route pour afficher la liste des groupes
-@app.route("/groupes")
-def liste_groupes():
-    # Récupération de tout les groupes
-    query = "SELECT * FROM Groupe"
-    groupes = recup_bdd(query)
-
-    # Rendu du modèle avec les données récupérées
-    return render_template('liste_groupes.html', groupes=groupes)
-
 
 @app.route("/contacts")
 def liste_contacts():
@@ -120,6 +109,101 @@ def delete_contact(contactId):
         # Redirection vers la liste des contacts avec message de confirmation
         flash("Le contact a été supprimé", "danger")
         return redirect(url_for('liste_contacts'))
+
+
+# Définir la route pour afficher la liste des groupes
+@app.route("/groupes")
+def liste_groupes():
+    # Récupération de tout les groupes
+    query = "SELECT * FROM Groupe"
+    groupes = recup_bdd(query)
+
+    # Rendu du modèle avec les données récupérées
+    return render_template('groupeList.html', groupes=groupes)
+
+
+@app.route("/groupes/new",  methods=['POST', 'GET'])
+def ajouter_groupe():
+    if request.method == 'POST':
+        # Récupération des informations du formulaire
+        nom = request.form['nom']
+        photo = request.form['photo']
+
+        # Requête dans la base de données
+        query = '''
+            INSERT INTO Groupe (nom_de_groupe, photo_groupe, created_date, updated_date) 
+            VALUES ('{}', '{}', '{}', '{}')
+        '''.format(nom, photo, now(), now())
+        action_bdd(query)
+
+        # Redirection vers la liste des groupes avec message de confirmation
+        flash("Le groupe a été créé", "success")
+        return redirect(url_for('liste_groupes'))
+
+    elif request.method == 'GET':
+        return render_template('groupeNew.html')
+
+@app.route("/groupes/<int:groupeId>/edit", methods=['GET', 'POST'])
+def edit_groupe(groupeId):
+    # Récupération du groupe
+    query = "SELECT * FROM Groupe WHERE id_groupe = {}".format(groupeId)
+    groupe = recup_bdd(query, True)
+
+    if request.method == 'GET':
+        if groupe:
+            return render_template('groupeEdit.html', groupe=groupe)
+
+    elif request.method == 'POST':
+        # Vérification de modification des valeurs
+        i = 1
+        doUpdate = False
+        for key in request.form:
+            if request.form[key] != groupe[i]:
+                doUpdate = True
+            i += 1
+
+        if doUpdate:
+            # Récupération des informations du formulaire
+            nom = request.form['nom']
+            photo = request.form['photo']
+
+            # Requête dans la base de données
+            query = '''
+                        UPDATE Groupe
+                        SET nom='{}', photo_groupe='{}', updated_date='{}'
+                        WHERE id_groupe='{}'
+                    '''.format(nom, photo, now(), groupeId)
+            action_bdd(query)
+
+            # Message de confirmation
+            flash("Le groupe a été modifié", "warning")
+
+        # Redirection vers la liste des groupes
+        return redirect(url_for('liste_groupes'))
+
+
+@app.route("/groupes/<int:groupeId>/delete", methods=['GET', 'POST'])
+def delete_groupe(groupeId):
+    if request.method == 'GET':
+        # Récupération du contact
+        query = "SELECT * FROM Groupe WHERE id_groupe = '{}'".format(groupeId)
+        groupe = recup_bdd(query, True)
+
+        if groupe:
+            return render_template('groupeDelete.html', groupe=groupe)
+
+    elif request.method == 'POST':
+        # Requête dans la base de données (suppression du groupe)
+        query = "DELETE FROM Groupe WHERE id_groupe = '{}'".format(groupeId)
+        action_bdd(query)
+
+        # Requête dans la base de données (suppression des liens avec les contacts)
+        query = "DELETE FROM Appartenir WHERE id_groupe = '{}'".format(groupeId)
+        action_bdd(query)
+
+        # Redirection vers la liste des groupes avec message de confirmation
+        flash("Le groupe a été supprimé", "danger")
+        return redirect(url_for('liste_groupes'))
 
 
 # Route pour l'export CSV

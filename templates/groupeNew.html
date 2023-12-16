@@ -1,0 +1,24 @@
+<!-- Page de création d'un groupe  -->
+{% extends "layout/base.html" %}
+
+{% block title %}Création d'un groupe{% endblock %}
+
+{% block content %}
+    {% include 'layout/navbar.html' %}
+    <h1 class="mt-5"">Créer un groupe</h1>
+
+    <!-- Formulaire d'un contact -->
+    <div class="container mt-5 mb-5">
+    <form action="" method="POST">
+        <div class="form-group">
+            <label for="nom">Nom du groupe:</label>
+            <input type="text" class="form-control" id="nom" name="nom" placeholder="Entrez votre nom" required>
+        </div>
+        <div class="form-group">
+            <label for="photo">Choisir une photo :</label>
+            <input type="file" class="form-control-file" id="photo" name="photo" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Créer</button>
+    </form>
+</div>
+{% endblock %}
