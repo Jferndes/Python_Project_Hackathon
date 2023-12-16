@@ -1,12 +1,13 @@
 <!-- Page de modification d'un contact  -->
 {% extends "layout/base.html" %}
 
-{% block title %}Liste des contacts{% endblock %}
+{% block title %}Modification d'un contact{% endblock %}
 
-    {% block content %}
-        {% include 'layout/navbar.html' %}
-        <h1>Edit Contact</h1>
+{% block content %}
+    {% include 'layout/navbar.html' %}
+    <h1 class="m-5">Edit Contact</h1>
 
+    <div class="container mb-5 mt-5">
         <!-- Formulaire d'un contact (Avec champs remplie) -->
         <form method="POST" action="{{ url_for('edit_contact', contactId=contact[0]) }}">
             <label for="nom">Nom:</label>
@@ -29,6 +30,7 @@
 
             <button type="submit" class="btn btn-primary">Enregistrer</button>
         </form>
-    <br>
-    <a href="{{ url_for('liste_contacts') }}" class="btn btn-secondary">Retour à la liste des contacts</a>
-    {% endblock %}
+        <br>
+        <a href="{{ url_for('liste_contacts') }}" class="btn btn-secondary">Retour à la liste des contacts</a>
+    </div>
+{% endblock %}

@@ -2,7 +2,9 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
         <!-- Marque et bascule du bouton -->
-        <a class="navbar-brand" href="{{ url_for('index') }}">Hackathon</a>
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+            Hackathon
+        </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -10,14 +12,25 @@
         <!-- Liens de navigation -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="{{ url_for('ajouter_contact') }}">Ajouter des contacts</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Contact
+                    </a>
+                    <ul class="dropdown-menu"><li>
+                        <li><a class="nav-link" href="{{ url_for('liste_contacts') }}">Liste des contacts</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="nav-link" href="{{ url_for('ajouter_contact') }}">Nouveau contact</a></li>
+                    </ul>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('liste_contacts') }}">Liste des Contacts</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('liste_groupes') }}">Liste des Groupes</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Groupe
+                    </a>
+                    <ul class="dropdown-menu"><li>
+                        <li><a class="nav-link" href="{{ url_for('liste_groupes') }}">Liste des groupes</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="nav-link" href="{{ url_for('ajouter_groupe') }}">Nouveau groupe<groupe></groupe></a></li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('export_csv') }}">Exporter</a>

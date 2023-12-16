@@ -1,14 +1,14 @@
 <!-- Page de création d'un contact  -->
 {% extends "layout/base.html" %}
 
-{% block title %}Page des Contacts{% endblock %}
+{% block title %}Création d'un contact{% endblock %}
 
 {% block content %}
     {% include 'layout/navbar.html' %}
-    <h1>Bienvenue</h1>
+    <h1 class="mt-5"">Créer un contact</h1>
 
     <!-- Formulaire d'un contact -->
-    <div class="container mt-5">
+    <div class="container mt-5 mb-5">
     <form action="" method="POST">
         <div class="form-group">
             <label for="nom">Nom :</label>
@@ -34,8 +34,7 @@
             <label for="photo">Choisir une photo :</label>
             <input type="file" class="form-control-file" id="photo" name="photo" required>
         </div>
-        <button type="submit" class="btn btn-primary">Envoyer</button>
+        <button type="submit" class="btn btn-primary">Créer</button>
     </form>
 </div>
-
 {% endblock %}

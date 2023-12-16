@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="hackathon_bdd" uuid="35a01611-ecf2-475c-89bd-812394306096">
+    <data-source source="LOCAL" name="hackathon_bdd" uuid="7bba3dfc-c421-4ad5-98fd-6c1356ec5542">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>

@@ -1,0 +1,20 @@
+<!-- Page de contrôle de la suppression d'un groupe  -->
+{% extends "layout/base.html" %}
+
+{% block title %}Suppression d'un groupe{% endblock %}
+
+{% block content %}
+    {% include 'layout/navbar.html' %}
+
+    <h1 class="m-5">Supprimer le groupe</h1>
+
+    <!-- Formulaire de contrôle pour la suppression -->
+    <div class="container mt-5 mb-5">
+        <form method="POST" action="{{ url_for('delete_groupe', groupeId=groupe[0]) }}">
+            <h5 class="text-center">Voulez-vous vraiment supprimer le groupe ?</h5>
+            <h5 class="text-center mb-3">{{ groupe[1] }}</h5>
+            <button type="submit" class="btn btn-danger mb-2">Supprimer</button>
+            <a href="{{ url_for('liste_contacts') }}" class="btn btn-secondary">Annuler</a>
+        </form>
+    </div>
+{% endblock %}
