@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+import flask_bcrypt
 
 
 # Fonction qui donne date plus heure sans les millisecondes
@@ -11,11 +12,15 @@ def now():
 def connect_db():
     return sqlite3.connect('hackathon_bdd.sqlite')
 
+
 # Fonction pour pour récupérer des données dans la base de données
-def recup_bdd(query: str, doOne: bool = False):
+def recup_bdd(query: str, values=None, doOne: bool = False):
     connection = connect_db()
     cursor = connection.cursor()
-    cursor.execute(query)
+    if values:
+        cursor.execute(query, values)
+    else:
+        cursor.execute(query)
 
     if doOne:
         result = cursor.fetchone()
@@ -26,12 +31,17 @@ def recup_bdd(query: str, doOne: bool = False):
     return result
 
 # Fonction pour faire une action (INSERT, UPDATE, DELETE) dans la base de données
-def action_bdd(query: str):
+def action_bdd(query: str, values):
     connection = connect_db()
     cursor = connection.cursor()
-    cursor.execute(query)
+    cursor.execute(query, values)
     connection.commit()
     connection.close()
+
+
+def valid_login(password_hash, password_clear):
+    return flask_bcrypt.check_password_hash(pw_hash=password_hash, password=password_clear)
+
 
 def is_valid_date_of_birth(date_str):
     try:

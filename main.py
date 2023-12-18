@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response, request, redirect, url_for, flash
+from flask import Flask, render_template, Response, request, redirect, url_for, flash, session
 from function import *
 from werkzeug.utils import secure_filename
 import os
@@ -19,7 +19,41 @@ def allowed_file(filename):
 def index():
     return render_template('index.html')
 
-@app.route("/contacts")
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        query = "SELECT * FROM User WHERE username = ?"
+        values = (username,)
+        user = recup_bdd(query, values, doOne=True)
+
+        if user and user[2] == password:
+            session['username'] = username
+            flash("Bienvenue "+username, "success")
+            return redirect(url_for('index'))
+            '''if valid_login(user[0], password):
+            session['username'] = username
+            return redirect(url_for('index'))'''
+        else:
+            flash("Invalid Username/Password", "danger")
+            return render_template('auth/login.html')
+
+    elif request.method == 'GET':
+        return render_template('auth/login.html')
+
+
+@app.route('/logout')
+def logout():
+    if 'username' in session:
+        session.pop('username', None)
+        flash("Vous avez été deconnecté", "danger")
+    return redirect(url_for('login'))
+
+
+@app.get("/contacts")
 def liste_contacts():
     # Récupération de tout les contacts
     query = "SELECT * FROM Contact"
@@ -38,14 +72,13 @@ def ajouter_contact():
         email = request.form['email']
         tel = request.form['tel']
         date_naissance = request.form['dob']
-        photo = request.form['photo']
 
         # Requête dans la base de données
         query = '''
-            INSERT INTO Contact (nom, prenom, e_mail, tel, date_naissance, photo_profil, created_date, updated_date)
-            VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')
-        '''.format(nom, prenom, email, tel, date_naissance, photo, now(), now())
-        action_bdd(query)
+            INSERT INTO Contact (nom, prenom, e_mail, tel, date_naissance, created_date, updated_date, id_user)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+        values = (nom, prenom, email, tel, date_naissance, now(), now(), 1)
+        action_bdd(query, values)
 
         # Redirection vers la liste des contacts avec message de confirmation
         flash("Le contact a été créé", "success")
@@ -58,8 +91,9 @@ def ajouter_contact():
 @app.route("/contacts/<int:contactId>/edit", methods=['GET', 'POST'])
 def edit_contact(contactId):
     # Récupération du contact
-    query = "SELECT * FROM Contact WHERE id_contact = {}".format(contactId)
-    contact = recup_bdd(query, True)
+    query = "SELECT * FROM Contact WHERE id_contact = ?"
+    values = (contactId,)
+    contact = recup_bdd(query, values, True)
 
     if request.method == 'GET':
         if contact:
@@ -81,18 +115,22 @@ def edit_contact(contactId):
             email = request.form['email']
             tel = request.form['tel']
             date_naissance = request.form['dob']
-            photo = request.form['photo']
 
             # Requête dans la base de données
             query = '''
                         UPDATE Contact
-                        SET nom='{}', prenom='{}', e_mail='{}', tel='{}', date_naissance='{}', photo_profil='{}', updated_date='{}'
-                        WHERE id_contact='{}'
-                    '''.format(nom, prenom, email, tel, date_naissance, photo, now(), contactId)
-            action_bdd(query)
+                        SET nom=?, prenom=?, e_mail=?, tel=?, date_naissance=?, updated_date=?
+                        WHERE id_contact=? AND id_user=?
+                    '''
+            values = (nom, prenom, email, tel, date_naissance, now(), contactId, 1)
+            action_bdd(query, values)
 
             # Message de confirmation
             flash("Le contact a été modifié", "warning")
+
+        else:
+            # Message d'erreur
+            flash("Le contact non modifié : Aucune valeur modifié", "warning")
 
         # Redirection vers la liste des contacts
         return redirect(url_for('liste_contacts'))
@@ -102,16 +140,18 @@ def edit_contact(contactId):
 def delete_contact(contactId):
     if request.method == 'GET':
         # Récupération du contact
-        query = "SELECT * FROM Contact WHERE id_contact = '{}'".format(contactId)
-        contact = recup_bdd(query, True)
+        query = "SELECT * FROM Contact WHERE id_contact = ?"
+        values = (contactId,)
+        contact = recup_bdd(query, values, True)
 
         if contact:
             return render_template('contactDelete.html', contact=contact)
 
     elif request.method == 'POST':
         # Requête dans la base de données
-        query = "DELETE FROM Contact WHERE id_contact = '{}'".format(contactId)
-        action_bdd(query)
+        query = "DELETE FROM Contact WHERE id_contact = ?"
+        values = (contactId,)
+        action_bdd(query, values)
 
         # Redirection vers la liste des contacts avec message de confirmation
         flash("Le contact a été supprimé", "danger")
@@ -134,14 +174,14 @@ def ajouter_groupe():
     if request.method == 'POST':
         # Récupération des informations du formulaire
         nom = request.form['nom']
-        photo = request.form['photo']
 
         # Requête dans la base de données
         query = '''
-            INSERT INTO Groupe (nom_de_groupe, photo_groupe, created_date, updated_date) 
-            VALUES ('{}', '{}', '{}', '{}')
-        '''.format(nom, photo, now(), now())
-        action_bdd(query)
+            INSERT INTO Groupe (nom_de_groupe, created_date, updated_date, id_user) 
+            VALUES (?, ?, ?, ?)
+        '''
+        values = (nom, now(), now(), 1)
+        action_bdd(query, values)
 
         # Redirection vers la liste des groupes avec message de confirmation
         flash("Le groupe a été créé", "success")
@@ -153,8 +193,9 @@ def ajouter_groupe():
 @app.route("/groupes/<int:groupeId>/edit", methods=['GET', 'POST'])
 def edit_groupe(groupeId):
     # Récupération du groupe
-    query = "SELECT * FROM Groupe WHERE id_groupe = {}".format(groupeId)
-    groupe = recup_bdd(query, True)
+    query = "SELECT * FROM Groupe WHERE id_groupe = ?"
+    values = (groupeId,)
+    groupe = recup_bdd(query, values, True)
 
     if request.method == 'GET':
         if groupe:
@@ -172,15 +213,15 @@ def edit_groupe(groupeId):
         if doUpdate:
             # Récupération des informations du formulaire
             nom = request.form['nom']
-            photo = request.form['photo']
 
             # Requête dans la base de données
             query = '''
                         UPDATE Groupe
-                        SET nom='{}', photo_groupe='{}', updated_date='{}'
-                        WHERE id_groupe='{}'
-                    '''.format(nom, photo, now(), groupeId)
-            action_bdd(query)
+                        SET nom_de_groupe=?, updated_date=?
+                        WHERE id_groupe=? AND id_user=?
+                    '''
+            values = (nom, now(), groupeId, 1)
+            action_bdd(query, values)
 
             # Message de confirmation
             flash("Le groupe a été modifié", "warning")
@@ -193,20 +234,23 @@ def edit_groupe(groupeId):
 def delete_groupe(groupeId):
     if request.method == 'GET':
         # Récupération du contact
-        query = "SELECT * FROM Groupe WHERE id_groupe = '{}'".format(groupeId)
-        groupe = recup_bdd(query, True)
+        query = "SELECT * FROM Groupe WHERE id_groupe = ?"
+        values = (groupeId,)
+        groupe = recup_bdd(query, values, True)
 
         if groupe:
             return render_template('groupeDelete.html', groupe=groupe)
 
     elif request.method == 'POST':
         # Requête dans la base de données (suppression du groupe)
-        query = "DELETE FROM Groupe WHERE id_groupe = '{}'".format(groupeId)
-        action_bdd(query)
+        query = "DELETE FROM Groupe WHERE id_groupe = ?"
+        values = (groupeId,)
+        action_bdd(query, values)
 
         # Requête dans la base de données (suppression des liens avec les contacts)
-        query = "DELETE FROM Appartenir WHERE id_groupe = '{}'".format(groupeId)
-        action_bdd(query)
+        query = "DELETE FROM Appartenir WHERE id_groupe = ?"
+        values = (groupeId,)
+        action_bdd(query, values)
 
         # Redirection vers la liste des groupes avec message de confirmation
         flash("Le groupe a été supprimé", "danger")
@@ -228,7 +272,7 @@ def export_csv(table_name):
     return Response(
         csv_content,
         mimetype="text/csv",
-        headers={"Content-disposition": f"attachment; filename={table_name}_export.csv"}
+        headers={"Content-disposition": "attachment; filename=export.csv"}
     )
 
 def generate_csv_content(data):
