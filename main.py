@@ -268,12 +268,16 @@ def export_csv(table_name):
     # Générer le contenu CSV
     csv_content = generate_csv_content(data)
 
-    # Retourner le contenu CSV en tant que fichier téléchargeable
+    # Renommer le fichier CSV en fonction du nom de la table
+    filename = f"{table_name}_export.csv"
+
+    # Retourner le contenu CSV en tant que fichier téléchargeable avec le nouveau nom
     return Response(
         csv_content,
         mimetype="text/csv",
-        headers={"Content-disposition": "attachment; filename=export.csv"}
+        headers={"Content-disposition": f"attachment; filename={filename}"}
     )
+
 
 def generate_csv_content(data):
     output = io.StringIO()
@@ -286,7 +290,7 @@ def generate_csv_content(data):
     return output.getvalue()
 
 
-def process_csv(file_path, table_name):
+def process_csv_contact(file_path, table_name):
     with open(file_path, 'r', encoding='utf-8') as file:
         reader = csv.reader(file)
         # Ignore the header, assuming the CSV does not have one
@@ -300,9 +304,9 @@ def process_csv(file_path, table_name):
                     "e_mail": row[3],
                     "tel": row[4],
                     "date_naissance": row[5],
-                    "photo_profil": row[6],
-                    "created_date": row[7],
-                    "updated_date": row[8]
+                    "created_date": row[6],
+                    "updated_date": row[7],
+                    "id_user": row[8]
                 }
                 # Insérer dans la base de données en utilisant la fonction appropriée
                 insert_data_into_db(data, table_name)
@@ -313,6 +317,28 @@ def process_csv(file_path, table_name):
     # Réinitialiser la séquence d'auto-incrémentation après l'importation
     reset_sequence('Contact')
 
+def process_csv_groupe(file_path, table_name):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        # Ignore the header, assuming the CSV does not have one
+        for row in reader:
+            # Vérifier si la ligne a suffisamment de colonnes
+            if len(row) >= 4:
+                # Créer un dictionnaire associant chaque en-tête à sa valeur respective
+                data = {
+                    "nom_de_groupe": row[1],
+                    "created_date": row[2],
+                    "updated_date": row[3],
+                    "id_user": row[4]
+                }
+                # Insérer dans la base de données en utilisant la fonction appropriée
+                insert_data_into_db(data, table_name)
+            else:
+                # Gérer le cas où la ligne n'a pas suffisamment de colonnes
+                print(f"La ligne {row} n'a pas suffisamment de colonnes.")
+
+    # Réinitialiser la séquence d'auto-incrémentation après l'importation
+    reset_sequence('Groupe')
 
 def reset_sequence(table_name):
     # Connexion à la base de données
@@ -332,31 +358,30 @@ def reset_sequence(table_name):
 def import_csv():
     if request.method == 'POST':
         # Sauvegarder les fichiers dans le dossier d'upload
-        file_contact = request.files['file_contact']
-        file_groupe = request.files['file_groupe']
-        ##file_appartenir = request.files['file_appartenir']
+        file_contact = request.files.get('file_contact')
+        file_groupe = request.files.get('file_groupe')
 
-        contact_filename = secure_filename(file_contact.filename)
-        groupe_filename = secure_filename(file_groupe.filename)
-        ##appartenir_filename = secure_filename(file_appartenir.filename)
+        import_contact = request.form.get('import_contact')
+        import_groupe = request.form.get('import_groupe')
 
-        contact_path = os.path.join(app.config['UPLOAD_FOLDER'], contact_filename)
-        groupe_path = os.path.join(app.config['UPLOAD_FOLDER'], groupe_filename)
-        ##appartenir_path = os.path.join(app.config['UPLOAD_FOLDER'], appartenir_filename)
+        if import_contact and file_contact:
+            contact_filename = secure_filename(file_contact.filename)
+            contact_path = os.path.join(app.config['UPLOAD_FOLDER'], contact_filename)
+            file_contact.save(contact_path)
+            process_csv_contact(contact_path, 'contact')
+            flash('Données de contact importées avec succès', 'success')
 
-        file_contact.save(contact_path)
-        file_groupe.save(groupe_path)
-        ##file_appartenir.save(appartenir_path)
+        if import_groupe and file_groupe:
+            groupe_filename = secure_filename(file_groupe.filename)
+            groupe_path = os.path.join(app.config['UPLOAD_FOLDER'], groupe_filename)
+            file_groupe.save(groupe_path)
+            process_csv_groupe(groupe_path, 'groupe')
+            flash('Données de groupe importées avec succès', 'success')
 
-        # Traiter les fichiers CSV
-        process_csv(contact_path, 'contact')
-        process_csv(groupe_path, 'groupe')
-        ##process_csv(appartenir_path, 'appartenir')
-
-        flash('Données importées avec succès', 'success')
         return redirect(url_for('index'))
 
     return render_template('import_csv.html')
+
 
 def parse_csv(file):
     csv_data = []
