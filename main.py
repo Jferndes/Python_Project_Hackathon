@@ -1,5 +1,6 @@
 from flask import Flask, render_template, Response, request, redirect, url_for, flash, session
 from function import *
+from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 import os
 import csv
@@ -7,6 +8,8 @@ import io
 
 app = Flask(__name__)
 app.secret_key = 'test'
+
+bcrypt = Bcrypt(app)
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'csv'}
@@ -34,15 +37,13 @@ def login():
         values = (username,)
         user = recup_bdd(query, values, doOne=True)
 
-        if user and user[2] == password:
+        if valid_login(user[2], password):
             session['username'] = username
             session['id'] = user[0]
             session['grade'] = user[5]
+
             flash("Bienvenue "+username, "success")
             return redirect(url_for('index'))
-            '''if valid_login(user[0], password):
-            session['username'] = username
-            return redirect(url_for('index'))'''
 
         else:
             flash("Invalid Username/Password", "danger")
@@ -59,6 +60,42 @@ def logout():
         session.pop('id', None)
         flash("Vous avez été deconnecté", "danger")
     return redirect(url_for('login'))
+
+
+@app.route('/register', methods=['POST', 'GET'])
+def register():
+    if request.method == 'GET':
+        return render_template('auth/register.html')
+
+    elif request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        password_ctrl = request.form['password_ctrl']
+
+        if password != password_ctrl:
+            flash("Les mots de passe ne sont pas identiques", "danger")
+            return redirect(url_for('register'))
+
+        else:
+            query = "SELECT * FROM User WHERE username = ?"
+            values = (username,)
+            user = recup_bdd(query, values, doOne=True)
+
+            if user:
+                flash("Ce username est déjà pris", "danger")
+                return redirect(url_for('register'))
+
+            else:
+                password_crypt = bcrypt.generate_password_hash(password)
+
+                query = '''
+                        INSERT INTO User (username, password, created_date, updated_date, grade)
+                        VALUES (?, ?, ?, ?, ?)'''
+                values = (username, password_crypt, now(), now(), 0)
+                action_bdd(query, values)
+
+                flash("Le compte a été créer", "success")
+                return redirect(url_for('login'))
 
 
 @app.get("/contacts")

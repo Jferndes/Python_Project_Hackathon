@@ -5,21 +5,37 @@
 {% block content %}
     {% include 'layout/navbar.html' %}
 
-    <form action="{{ url_for('inscription') }}" method="POST">
-        <div>
-            <label for="username">Nom d'utilisateur</label>
-            <input id="username" class="form-control" type="text" name="username" placeholder="Entrez votre nom d'utilisateur" />
+    <!-- Message flash (annonce d'une action ) -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="alert alert-{{ messages.0.0 }}" role="alert"> <!-- message.0.0 -> catégorie -->
+                        {% for category, message in messages %}
+                            {{ message }} </br> <!-- message -> contenue massage -->
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+    <h1 class="mt-5">Page d'inscrption</h1>
+
+    <div class="container mt-5 mb-5">
+            <form action="" method="POST">
+                <div class="mt-3">
+                    <label for="username">Nom d'utilisateur</label>
+                    <input class="form-control" type="text" name="username" placeholder="Entrez votre nom d'utilisateur" />
+                </div>
+                <div class="mt-3">
+                    <label for="password">Mot de passe</label>
+                    <input class="form-control" type="password" name="password" placeholder="Entrez votre mot de passe" />
+                </div>
+                <div class="mt-3">
+                    <label for="password">Confirmer mot de passe</label>
+                    <input class="form-control" type="password" name="password_ctrl" placeholder="Entrez votre mot de passe" />
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Connexion</button>
+                </div>
+            </form>
+            <a href="{{ url_for('login') }}" class="btn btn-primary mt-3">Vous avez déjà un compte</a>
         </div>
-        <div>
-            <label for="password">Mot de passe</label>
-            <input id="password" class="form-control" type="password" name="password" placeholder="Entrez votre mot de passe" />
-        </div>
-        <div>
-            <label for="password_cf">Confirmer votre de passe</label>
-            <input id="password_cf" class="form-control" type="password" name="password_cf" placeholder="Confirmer votre mot de passe" />
-        </div>
-        <div>
-            <button class="btn btn-primary" type="submit" name="send">Inscription</button>
-        </div>
-    </form>
 {% endblock %}
