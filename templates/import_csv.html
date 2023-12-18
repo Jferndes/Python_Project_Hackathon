@@ -4,7 +4,7 @@
 
 {% block content %}
     {% include 'layout/navbar.html' %}
-    <h2>Importer des données CSV</h2>
+    <h1 class="m-5">Importer des données CSV</h1>
     <form id="importForm" action="{{ url_for('import_csv') }}" method="post" enctype="multipart/form-data">
         {% with messages = get_flashed_messages() %}
             {% if messages %}

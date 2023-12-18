@@ -426,13 +426,19 @@ def delete_groupe(groupeId):
             return redirect(url_for('liste_groupes'))
 
 
-# Route pour l'export CSV
 
+# Route pour l'export CSV
 @app.route('/export_csv/<table_name>')
 def export_csv(table_name):
-    # Récupération des données de la table spécifiée
-    query = "SELECT * FROM {}".format(table_name)
-    data = recup_bdd(query)
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['id']
+
+    # Récupération des données de la table spécifiée liées à l'utilisateur actuel
+    query = f"SELECT * FROM {table_name} WHERE id_user = ?"
+    values = (user_id,)
+    data = recup_bdd(query, values)
 
     # Générer le contenu CSV
     csv_content = generate_csv_content(data)
@@ -446,7 +452,6 @@ def export_csv(table_name):
         mimetype="text/csv",
         headers={"Content-disposition": f"attachment; filename={filename}"}
     )
-
 
 def generate_csv_content(data):
     output = io.StringIO()
