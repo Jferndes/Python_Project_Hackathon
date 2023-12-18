@@ -5,7 +5,7 @@
 {% block content %}
     {% include 'layout/navbar.html' %}
     <h2>Importer des données CSV</h2>
-    <form action="{{ url_for('import_csv') }}" method="post" enctype="multipart/form-data">
+    <form id="importForm" action="{{ url_for('import_csv') }}" method="post" enctype="multipart/form-data">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <div class="alert alert-info" role="alert">
@@ -16,19 +16,42 @@
 
         <div class="form-group">
             <label for="file_contact">CSV Contact :</label>
-            <input type="file" name="file_contact" accept=".csv" class="form-control" required>
+            <input type="file" name="file_contact" accept=".csv" class="form-control">
         </div>
 
         <div class="form-group">
             <label for="file_groupe">CSV Groupe :</label>
-            <input type="file" name="file_groupe" accept=".csv" class="form-control" required>
+            <input type="file" name="file_groupe" accept=".csv" class="form-control">
         </div>
-<!--
+
         <div class="form-group">
-            <label for="file_appartenir">CSV Appartenir :</label>
-            <input type="file" name="file_appartenir" accept=".csv" class="form-control" required>
+            <label>Choisir le nombre de fichiers à importer :</label><br>
+            <input type="checkbox" name="import_contact" value="1"> Importer le fichier de contacts
+            <input type="checkbox" name="import_groupe" value="1"> Importer le fichier de groupes
         </div>
--->
+
         <button type="submit" class="btn btn-primary">Importer</button>
     </form>
+
+    {% block javascript %}
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#importForm').submit(function (e) {
+                // Vérifier si la case CSV Contact est cochée et si le fichier est sélectionné
+                if ($('input[name="import_contact"]:checked').length > 0 && $('input[name="file_contact"]').get(0).files.length === 0) {
+                    alert('Veuillez importer le fichier CSV Contact.');
+                    e.preventDefault(); // Empêcher l'envoi du formulaire
+                }
+
+                // Vérifier si la case CSV Groupe est cochée et si le fichier est sélectionné
+                if ($('input[name="import_groupe"]:checked').length > 0 && $('input[name="file_groupe"]').get(0).files.length === 0) {
+                    alert('Veuillez importer le fichier CSV Groupe.');
+                    e.preventDefault(); // Empêcher l'envoi du formulaire
+                }
+
+            });
+        });
+    </script>
+{% endblock %}
 {% endblock %}
