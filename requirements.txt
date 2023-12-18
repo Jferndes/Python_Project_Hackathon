@@ -2,3 +2,4 @@ Flask
 Flask-SQLAlchemy
 mysqlclient
 flask-bcrypt
+werkzeug

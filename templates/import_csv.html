@@ -1,0 +1,34 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Importation de données{% endblock %}
+
+{% block content %}
+    {% include 'layout/navbar.html' %}
+    <h2>Importer des données CSV</h2>
+    <form action="{{ url_for('import_csv') }}" method="post" enctype="multipart/form-data">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info" role="alert">
+                    {{ messages|join(', ') }}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="form-group">
+            <label for="file_contact">CSV Contact :</label>
+            <input type="file" name="file_contact" accept=".csv" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="file_groupe">CSV Groupe :</label>
+            <input type="file" name="file_groupe" accept=".csv" class="form-control" required>
+        </div>
+<!--
+        <div class="form-group">
+            <label for="file_appartenir">CSV Appartenir :</label>
+            <input type="file" name="file_appartenir" accept=".csv" class="form-control" required>
+        </div>
+-->
+        <button type="submit" class="btn btn-primary">Importer</button>
+    </form>
+{% endblock %}

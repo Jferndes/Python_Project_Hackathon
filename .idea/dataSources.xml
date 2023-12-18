@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="hackathon_bdd" uuid="7bba3dfc-c421-4ad5-98fd-6c1356ec5542">
+    <data-source source="LOCAL" name="hackathon_bdd" uuid="b8af2a49-7460-45d6-bcd9-201815fe1e28">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:hackathon_bdd.sqlite</jdbc-url>
+      <jdbc-url>jdbc:sqlite:C:\Users\sylve\OneDrive\Bureau\ECE\B2 (2023 - 2024)\Python\Hackathon23\Python_Project_Hackathon\hackathon_bdd.sqlite</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
       <libraries>
         <library>
