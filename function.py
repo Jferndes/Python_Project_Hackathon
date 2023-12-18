@@ -41,3 +41,17 @@ def action_bdd(query: str, values):
 
 def valid_login(password_hash, password_clear):
     return flask_bcrypt.check_password_hash(pw_hash=password_hash, password=password_clear)
+
+
+def is_valid_date_of_birth(date_str):
+    try:
+        date_of_birth = datetime.strptime(date_str, "%Y-%m-%d").date()
+        current_date = datetime.now().date()
+
+        # Vérifier que la date de naissance est antérieure à la date actuelle
+        if date_of_birth > current_date:
+            return False
+        else:
+            return True
+    except ValueError:
+        return False

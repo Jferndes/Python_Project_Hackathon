@@ -1,16 +1,22 @@
 from flask import Flask, render_template, Response, request, redirect, url_for, flash, session
 from function import *
+from werkzeug.utils import secure_filename
+import os
 import csv
 import io
 
 app = Flask(__name__)
 app.secret_key = 'test'
 
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'csv'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route("/")
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.get("/")
 def index():
-    if 'username' not in session:
-        return redirect(url_for('login'))
     return render_template('index.html')
 
 
@@ -252,15 +258,15 @@ def delete_groupe(groupeId):
 
 
 # Route pour l'export CSV
-@app.route('/export_csv')
-def export_csv():
 
-    # Récupération de tout les contacts
-    query = "SELECT * FROM Contact"
-    contacts = recup_bdd(query)
+@app.route('/export_csv/<table_name>')
+def export_csv(table_name):
+    # Récupération des données de la table spécifiée
+    query = "SELECT * FROM {}".format(table_name)
+    data = recup_bdd(query)
 
     # Générer le contenu CSV
-    csv_content = generate_csv_content(contacts)
+    csv_content = generate_csv_content(data)
 
     # Retourner le contenu CSV en tant que fichier téléchargeable
     return Response(
@@ -273,15 +279,112 @@ def generate_csv_content(data):
     output = io.StringIO()
     writer = csv.writer(output)
 
-    # Ajouter les en-têtes CSV si nécessaire
-    # writer.writerow(["Colonne1", "Colonne2", ...])
-
     # Ajouter les données CSV
     for row in data:
         writer.writerow(row)
 
     return output.getvalue()
 
+
+def process_csv(file_path, table_name):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        # Ignore the header, assuming the CSV does not have one
+        for row in reader:
+            # Vérifier si la ligne a suffisamment de colonnes
+            if len(row) >= 9:
+                # Créer un dictionnaire associant chaque en-tête à sa valeur respective
+                data = {
+                    "nom": row[1],
+                    "prenom": row[2],
+                    "e_mail": row[3],
+                    "tel": row[4],
+                    "date_naissance": row[5],
+                    "photo_profil": row[6],
+                    "created_date": row[7],
+                    "updated_date": row[8]
+                }
+                # Insérer dans la base de données en utilisant la fonction appropriée
+                insert_data_into_db(data, table_name)
+            else:
+                # Gérer le cas où la ligne n'a pas suffisamment de colonnes
+                print(f"La ligne {row} n'a pas suffisamment de colonnes.")
+
+    # Réinitialiser la séquence d'auto-incrémentation après l'importation
+    reset_sequence('Contact')
+
+
+def reset_sequence(table_name):
+    # Connexion à la base de données
+    conn = sqlite3.connect('hackathon_bdd.sqlite')
+    cursor = conn.cursor()
+
+    # Génération de la chaîne de requête dynamique
+    query = "UPDATE sqlite_sequence SET seq = 0 WHERE name = ?"
+
+    # Exécution de la commande SQL
+    cursor.execute(query, (table_name,))
+
+    # Validez la transaction et fermez la connexion
+    conn.commit()
+    conn.close()
+@app.route('/import_csv', methods=['GET', 'POST'])
+def import_csv():
+    if request.method == 'POST':
+        # Sauvegarder les fichiers dans le dossier d'upload
+        file_contact = request.files['file_contact']
+        file_groupe = request.files['file_groupe']
+        ##file_appartenir = request.files['file_appartenir']
+
+        contact_filename = secure_filename(file_contact.filename)
+        groupe_filename = secure_filename(file_groupe.filename)
+        ##appartenir_filename = secure_filename(file_appartenir.filename)
+
+        contact_path = os.path.join(app.config['UPLOAD_FOLDER'], contact_filename)
+        groupe_path = os.path.join(app.config['UPLOAD_FOLDER'], groupe_filename)
+        ##appartenir_path = os.path.join(app.config['UPLOAD_FOLDER'], appartenir_filename)
+
+        file_contact.save(contact_path)
+        file_groupe.save(groupe_path)
+        ##file_appartenir.save(appartenir_path)
+
+        # Traiter les fichiers CSV
+        process_csv(contact_path, 'contact')
+        process_csv(groupe_path, 'groupe')
+        ##process_csv(appartenir_path, 'appartenir')
+
+        flash('Données importées avec succès', 'success')
+        return redirect(url_for('index'))
+
+    return render_template('import_csv.html')
+
+def parse_csv(file):
+    csv_data = []
+    csv_reader = csv.reader(file)
+    for row in csv_reader:
+        csv_data.append(row)
+    return csv_data
+
+def insert_data_into_db(data, table_name):
+    # Connexion à la base de données
+    conn = sqlite3.connect('hackathon_bdd.sqlite')
+    cursor = conn.cursor()
+
+    # Génération de la chaîne de requête dynamique
+    columns = ', '.join([f'"{col}"' for col in data.keys()])
+    placeholders = ', '.join(['?' for _ in data])
+    query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+
+    # Insertion des données dans la base de données
+    cursor.execute(query, tuple(data.values()))
+
+    # Validez la transaction et fermez la connexion
+    conn.commit()
+    conn.close()
+
+def process_csv_data(data, table_name):
+    # Utilisez la fonction modifiée pour insérer les données
+    insert_data_into_db(data, table_name)
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True)
