@@ -32,11 +32,13 @@ def login():
 
         if user and user[2] == password:
             session['username'] = username
+            session['id'] = user[0]
             flash("Bienvenue "+username, "success")
             return redirect(url_for('index'))
             '''if valid_login(user[0], password):
             session['username'] = username
             return redirect(url_for('index'))'''
+
         else:
             flash("Invalid Username/Password", "danger")
             return render_template('auth/login.html')
@@ -55,12 +57,56 @@ def logout():
 
 @app.get("/contacts")
 def liste_contacts():
-    # Récupération de tout les contacts
-    query = "SELECT * FROM Contact"
-    contacts = recup_bdd(query)
+    if 'username' not in session:
+        return redirect(url_for('login'))
 
-    # Rendu du modèle avec les données récupérées
-    return render_template('contactList.html', contacts=contacts)
+    else:
+        # Récupération de tout les contacts
+        query = "SELECT * FROM Contact WHERE id_user = ?"
+        values = (session['id'],)
+        contacts = recup_bdd(query, values)
+
+        listIds = set(getListIds(contacts, 8))  # set permet d'avoir seulement une occurence par element
+
+        # Récupération des nom de groupe
+        placeholders = ",".join(["?"] * len(listIds))
+        query = "SELECT * FROM Groupe WHERE id_groupe IN ({})".format(placeholders)
+        values = tuple(listIds)
+        groupes = recup_bdd(query, values)
+        print(groupes)
+
+        # Création de la liste à afficher
+        listAffichage = []
+        for contact in contacts:
+            elem = {"id": contact[0],
+                    "nom": contact[1],
+                    "prenom": contact[2],
+                    "email": contact[3],
+                    "tel": contact[4],
+                    "date": contact[5]
+                    }
+            for groupe in groupes:
+                if contact[8] == groupe[0]:
+                    elem["nom_groupe"] = groupe[1]
+
+            listAffichage.append(elem)
+
+        return render_template('contactList.html', contacts=listAffichage)
+
+
+@app.get("/contacts/admin")
+def liste_contacts_admin():
+    if 'username' not in session and session['username'] != 'admin':
+        flash("Vous n'êtes pas administateur", "danger")
+        return redirect(url_for('index'))
+
+    else:
+        # Récupération de tout les contacts
+        query = "SELECT * FROM Contact"
+        contacts = recup_bdd(query)
+
+        # Rendu du modèle avec les données récupérées
+        return render_template('contactListAdmin.html', contacts=contacts)
 
 
 @app.route("/contacts/new",  methods=['POST', 'GET'])
@@ -175,17 +221,27 @@ def ajouter_groupe():
         # Récupération des informations du formulaire
         nom = request.form['nom']
 
-        # Requête dans la base de données
-        query = '''
-            INSERT INTO Groupe (nom_de_groupe, created_date, updated_date, id_user) 
-            VALUES (?, ?, ?, ?)
-        '''
-        values = (nom, now(), now(), 1)
-        action_bdd(query, values)
+        # Vérification nom
+        query = "SELECT * FROM Groupe WHERE nom_de_groupe=?"
+        values = (nom,)
+        groupe = recup_bdd(query, values)
 
-        # Redirection vers la liste des groupes avec message de confirmation
-        flash("Le groupe a été créé", "success")
-        return redirect(url_for('liste_groupes'))
+        if groupe:
+            flash("Le nom existe déjà", "danger")
+            return redirect(url_for('ajouter_groupe'))
+
+        else:
+            # Requête dans la base de données
+            query_groupe = '''
+                        INSERT INTO Groupe (nom_de_groupe, created_date, updated_date, id_user) 
+                        VALUES (?, ?, ?, ?)
+                    '''
+            values = (nom, now(), now(), session['id'])
+            action_bdd(query_groupe, values)
+
+            # Redirection vers la liste des groupes avec message de confirmation
+            flash("Le groupe a été créé", "success")
+            return redirect(url_for('liste_groupes'))
 
     elif request.method == 'GET':
         return render_template('groupeNew.html')
@@ -202,29 +258,32 @@ def edit_groupe(groupeId):
             return render_template('groupeEdit.html', groupe=groupe)
 
     elif request.method == 'POST':
-        # Vérification de modification des valeurs
-        i = 1
-        doUpdate = False
-        for key in request.form:
-            if request.form[key] != groupe[i]:
-                doUpdate = True
-            i += 1
+        # Récupération des informations du formulaire
+        nom = request.form['nom']
 
-        if doUpdate:
-            # Récupération des informations du formulaire
-            nom = request.form['nom']
+        if nom == groupe[1]:
 
-            # Requête dans la base de données
-            query = '''
-                        UPDATE Groupe
-                        SET nom_de_groupe=?, updated_date=?
-                        WHERE id_groupe=? AND id_user=?
-                    '''
-            values = (nom, now(), groupeId, 1)
-            action_bdd(query, values)
+            # Vérification nom
+            query = "SELECT * FROM Groupe WHERE nom_de_groupe=?"
+            values = (nom,)
+            groupe_exist = recup_bdd(query, values)
 
-            # Message de confirmation
-            flash("Le groupe a été modifié", "warning")
+            if groupe_exist:
+                flash("Le nom existe déjà", "danger")
+                return redirect(url_for('edit_groupe', groupeId=groupeId))
+
+            else:
+                # Requête dans la base de données
+                query = '''
+                            UPDATE Groupe
+                            SET nom_de_groupe=?, updated_date=?
+                            WHERE id_groupe=? AND id_user=?
+                        '''
+                values = (nom, now(), groupeId, 1)
+                action_bdd(query, values)
+
+                # Message de confirmation
+                flash("Le groupe a été modifié", "warning")
 
         # Redirection vers la liste des groupes
         return redirect(url_for('liste_groupes'))

@@ -55,3 +55,10 @@ def is_valid_date_of_birth(date_str):
             return True
     except ValueError:
         return False
+
+
+def getListIds(listTuple, position:int):
+    listIds = []
+    for elem in listTuple:
+        listIds.append(elem[position])
+    return listIds
