@@ -378,7 +378,7 @@ def import_csv():
             process_csv_groupe(groupe_path, 'groupe')
             flash('Données de groupe importées avec succès', 'success')
 
-        return redirect(url_for('index'))
+        return redirect(url_for('liste_contacts'))
 
     return render_template('import_csv.html')
 
