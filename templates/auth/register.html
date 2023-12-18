@@ -1,0 +1,25 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Page d'enregistrement{% endblock %}
+
+{% block content %}
+    {% include 'layout/navbar.html' %}
+
+    <form action="{{ url_for('inscription') }}" method="POST">
+        <div>
+            <label for="username">Nom d'utilisateur</label>
+            <input id="username" class="form-control" type="text" name="username" placeholder="Entrez votre nom d'utilisateur" />
+        </div>
+        <div>
+            <label for="password">Mot de passe</label>
+            <input id="password" class="form-control" type="password" name="password" placeholder="Entrez votre mot de passe" />
+        </div>
+        <div>
+            <label for="password_cf">Confirmer votre de passe</label>
+            <input id="password_cf" class="form-control" type="password" name="password_cf" placeholder="Confirmer votre mot de passe" />
+        </div>
+        <div>
+            <button class="btn btn-primary" type="submit" name="send">Inscription</button>
+        </div>
+    </form>
+{% endblock %}

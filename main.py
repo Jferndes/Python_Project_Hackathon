@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response, request, redirect, url_for, flash
+from flask import Flask, render_template, Response, request, redirect, url_for, flash, session
 from function import *
 import csv
 import io
@@ -7,12 +7,47 @@ app = Flask(__name__)
 app.secret_key = 'test'
 
 
-@app.get("/")
+@app.route("/")
 def index():
+    if 'username' not in session:
+        return redirect(url_for('login'))
     return render_template('index.html')
 
 
-@app.route("/contacts")
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        query = "SELECT * FROM User WHERE username = ?"
+        values = (username,)
+        user = recup_bdd(query, values, doOne=True)
+
+        if user and user[2] == password:
+            session['username'] = username
+            flash("Bienvenue "+username, "success")
+            return redirect(url_for('index'))
+            '''if valid_login(user[0], password):
+            session['username'] = username
+            return redirect(url_for('index'))'''
+        else:
+            flash("Invalid Username/Password", "danger")
+            return render_template('auth/login.html')
+
+    elif request.method == 'GET':
+        return render_template('auth/login.html')
+
+
+@app.route('/logout')
+def logout():
+    if 'username' in session:
+        session.pop('username', None)
+        flash("Vous avez été deconnecté", "danger")
+    return redirect(url_for('login'))
+
+
+@app.get("/contacts")
 def liste_contacts():
     # Récupération de tout les contacts
     query = "SELECT * FROM Contact"
@@ -31,13 +66,12 @@ def ajouter_contact():
         email = request.form['email']
         tel = request.form['tel']
         date_naissance = request.form['dob']
-        photo = request.form['photo']
 
         # Requête dans la base de données
         query = '''
-            INSERT INTO Contact (nom, prenom, e_mail, tel, date_naissance, photo_profil, created_date, updated_date)
+            INSERT INTO Contact (nom, prenom, e_mail, tel, date_naissance, created_date, updated_date, id_user)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
-        values = (nom, prenom, email, tel, date_naissance, photo, now(), now())
+        values = (nom, prenom, email, tel, date_naissance, now(), now(), 1)
         action_bdd(query, values)
 
         # Redirection vers la liste des contacts avec message de confirmation
@@ -75,15 +109,14 @@ def edit_contact(contactId):
             email = request.form['email']
             tel = request.form['tel']
             date_naissance = request.form['dob']
-            photo = request.form['photo']
 
             # Requête dans la base de données
             query = '''
                         UPDATE Contact
-                        SET nom=?, prenom=?, e_mail=?, tel=?, date_naissance=?, photo_profil=?, updated_date=?
-                        WHERE id_contact=?
+                        SET nom=?, prenom=?, e_mail=?, tel=?, date_naissance=?, updated_date=?
+                        WHERE id_contact=? AND id_user=?
                     '''
-            values = (nom, prenom, email, tel, date_naissance, photo, now(), contactId)
+            values = (nom, prenom, email, tel, date_naissance, now(), contactId, 1)
             action_bdd(query, values)
 
             # Message de confirmation
@@ -135,14 +168,13 @@ def ajouter_groupe():
     if request.method == 'POST':
         # Récupération des informations du formulaire
         nom = request.form['nom']
-        photo = request.form['photo']
 
         # Requête dans la base de données
         query = '''
-            INSERT INTO Groupe (nom_de_groupe, photo_groupe, created_date, updated_date) 
+            INSERT INTO Groupe (nom_de_groupe, created_date, updated_date, id_user) 
             VALUES (?, ?, ?, ?)
         '''
-        values = (nom, photo, now(), now())
+        values = (nom, now(), now(), 1)
         action_bdd(query, values)
 
         # Redirection vers la liste des groupes avec message de confirmation
@@ -175,15 +207,14 @@ def edit_groupe(groupeId):
         if doUpdate:
             # Récupération des informations du formulaire
             nom = request.form['nom']
-            photo = request.form['photo']
 
             # Requête dans la base de données
             query = '''
                         UPDATE Groupe
-                        SET nom_de_groupe=?, photo_groupe=?, updated_date=?
-                        WHERE id_groupe=?
+                        SET nom_de_groupe=?, updated_date=?
+                        WHERE id_groupe=? AND id_user=?
                     '''
-            values = (nom, photo, now(), groupeId)
+            values = (nom, now(), groupeId, 1)
             action_bdd(query, values)
 
             # Message de confirmation

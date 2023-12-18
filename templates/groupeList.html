@@ -26,8 +26,9 @@
             <tr>
                 <th data-column="0">ID Groupe <span class="arrow"></span></th>
                 <th data-column="1">Nom du groupe <span class="arrow"></span></th>
-                <th data-column="2">Photo du groupe <span class="arrow"></span></th>
                 <th data-column="3">Created Date <span class="arrow"></span></th>
+                <th data-column="4">Updated Date <span class="arrow"></span></th>
+                <th data-column="5">Id User<span class="arrow"></span></th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -36,8 +37,9 @@
                 <tr class="groupe-row">
                     <td>{{ groupe[0] }}</td> <!-- ID Groupe -->
                     <td>{{ groupe[1] }}</td> <!-- Nom du groupe -->
-                    <td>{{ groupe[2] }}</td> <!-- Photo du groupe -->
-                    <td>{{ groupe[3] }}</td> <!-- Created Date -->
+                    <td>{{ groupe[2] }}</td> <!-- Created Date -->
+                    <td>{{ groupe[3] }}</td> <!-- Updated Date -->
+                    <td>{{ groupe[4] }}</td> <!-- ID User -->
                     <!-- Actions -->
                     <td>
                         <a href="{{ url_for('edit_groupe', groupeId=groupe[0]) }}" class="btn btn-primary btn-sm">

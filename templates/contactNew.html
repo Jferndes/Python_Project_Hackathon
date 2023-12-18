@@ -5,7 +5,7 @@
 
 {% block content %}
     {% include 'layout/navbar.html' %}
-    <h1 class="mt-5"">Créer un contact</h1>
+    <h1 class="mt-5">Créer un contact</h1>
 
     <!-- Formulaire d'un contact -->
     <div class="container mt-5 mb-5">
@@ -29,10 +29,6 @@
         <div class="form-group">
             <label for="dob">Date de naissance :</label>
             <input type="date" class="form-control" id="dob" name="dob" required>
-        </div>
-        <div class="form-group">
-            <label for="photo">Choisir une photo :</label>
-            <input type="file" class="form-control-file" id="photo" name="photo" required>
         </div>
         <button type="submit" class="btn btn-primary">Créer</button>
     </form>

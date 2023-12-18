@@ -28,15 +28,15 @@
     <table class="table table-striped" id="contactTable">
         <thead>
             <tr>
-                <th data-column="3">ID Contact <span class="arrow"></span></th>
-                <th data-column="0">Nom <span class="arrow"></span></th>
-                <th data-column="1">Prénom <span class="arrow"></span></th>
-                <th data-column="2">Email <span class="arrow"></span></th>
+                <th data-column="0">ID Contact <span class="arrow"></span></th>
+                <th data-column="1">Nom <span class="arrow"></span></th>
+                <th data-column="2">Prénom <span class="arrow"></span></th>
+                <th data-column="3">Email <span class="arrow"></span></th>
                 <th data-column="4">Téléphone <span class="arrow"></span></th>
                 <th data-column="5">Date de naissance <span class="arrow"></span></th>
-                <th data-column="6">Photo de profil <span class="arrow"></span></th>
-                <th data-column="7">Created Date <span class="arrow"></span></th>
-                <th data-column="8">Updated Date <span class="arrow"></span></th>
+                <th data-column="6">Created Date <span class="arrow"></span></th>
+                <th data-column="7">Updated Date <span class="arrow"></span></th>
+                <th data-column="8">Id User <span class="arrow"></span></th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -49,9 +49,10 @@
                     <td>{{ contact[3] }}</td> <!-- Email -->
                     <td>{{ contact[4] }}</td> <!-- Téléphone -->
                     <td>{{ contact[5] }}</td> <!-- Date de naissance -->
-                    <td>{{ contact[6] }}</td> <!-- Photo de profil -->
-                    <td>{{ contact[7] }}</td> <!-- Created Date -->
-                    <td>{{ contact[8] }}</td> <!-- Updated Date -->
+                    <td>{{ contact[6] }}</td> <!-- Created Date -->
+                    <td>{{ contact[7] }}</td> <!-- Updated Date -->
+                    <td>{{ contact[8] }}</td> <!-- Id User -->
+
                     <!-- Actions -->
                     <td>
                         <a href="{{ url_for('edit_contact', contactId=contact[0]) }}" class="btn btn-primary btn-sm">

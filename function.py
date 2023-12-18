@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+import flask_bcrypt
 
 
 # Fonction qui donne date plus heure sans les millisecondes
@@ -36,3 +37,7 @@ def action_bdd(query: str, values):
     cursor.execute(query, values)
     connection.commit()
     connection.close()
+
+
+def valid_login(password_hash, password_clear):
+    return flask_bcrypt.check_password_hash(pw_hash=password_hash, password=password_clear)
