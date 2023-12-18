@@ -1,11 +1,9 @@
-<!-- Page d'affichage de la liste des contacts  -->
 {% extends "layout/base.html" %}
 
-{% block title %}Liste des contacts{% endblock %}
+{% block title %}Liste des groupes{% endblock %}
 
 {% block content %}
     {% include 'layout/navbar.html' %}
-
     <!-- Message flash (annonce d'une action ) -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -17,42 +15,37 @@
         {% endif %}
     {% endwith %}
 
-    <h1 class="m-5">Liste des contacts</h1>
+    <h1 class="m-5">Liste des groupes</h1>
 
-    <!-- Barre de Recherche -->
     <div class="input-group mb-3">
         <input type="text" class="form-control" id="searchInput" placeholder="Rechercher...">
     </div>
 
-    <!-- Tableau de la liste de contacts -->
-    <table class="table table-striped" id="contactTable">
+    <table class="table table-striped" id="groupeTable">
         <thead>
             <tr>
-                <th data-column="0">Nom <span class="arrow"></span></th>
-                <th data-column="1">Prénom <span class="arrow"></span></th>
-                <th data-column="2">Email <span class="arrow"></span></th>
-                <th data-column="3">Téléphone <span class="arrow"></span></th>
-                <th data-column="4">Date de naissance <span class="arrow"></span></th>
-                <th data-column="5">Groupe <span class="arrow"></span></th>
+                <th data-column="0">ID Groupe <span class="arrow"></span></th>
+                <th data-column="1">Nom du groupe <span class="arrow"></span></th>
+                <th data-column="3">Created Date <span class="arrow"></span></th>
+                <th data-column="4">Updated Date <span class="arrow"></span></th>
+                <th data-column="5">Id User<span class="arrow"></span></th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
-            {% for contact in contacts %}
-                <tr class="contact-row">
-                    <td>{{ contact["nom"] }}</td>       <!-- Nom -->
-                    <td>{{ contact["prenom"] }}</td>    <!-- Prénom -->
-                    <td>{{ contact["email"] }}</td>     <!-- Email -->
-                    <td>{{ contact["tel"] }}</td>       <!-- Téléphone -->
-                    <td>{{ contact["date"] }}</td>      <!-- Date de naissance -->
-                    <td>{{ contact["nom_groupe"] }}</td> <!-- Nom Groupe -->
-
+            {% for groupe in groupes %}
+                <tr class="groupe-row">
+                    <td>{{ groupe[0] }}</td> <!-- ID Groupe -->
+                    <td>{{ groupe[1] }}</td> <!-- Nom du groupe -->
+                    <td>{{ groupe[2] }}</td> <!-- Created Date -->
+                    <td>{{ groupe[3] }}</td> <!-- Updated Date -->
+                    <td>{{ groupe[4] }}</td> <!-- ID User -->
                     <!-- Actions -->
                     <td>
-                        <a href="{{ url_for('edit_contact', contactId=contact['id']) }}" class="btn btn-primary btn-sm">
+                        <a href="{{ url_for('edit_groupe', groupeId=groupe[0]) }}" class="btn btn-primary btn-sm">
                             Edit
                         </a>
-                        <a href="{{ url_for('delete_contact', contactId=contact['id']) }}" class="btn btn-danger btn-sm">
+                        <a href="{{ url_for('delete_groupe', groupeId=groupe[0]) }}" class="btn btn-danger btn-sm">
                             Delete
                         </a>
                     </td>
@@ -61,22 +54,21 @@
         </tbody>
     </table>
 
-    <!-- Script JS de la Recherche (Recherche dynamique) -->
     {% block scripts %}
         {{ super() }}
         <script>
             $(document).ready(function () {
-                $("#contactTable th").click(function () {
+                $("#groupeTable th").click(function () {
                     var column = $(this).data("column");
                     var direction = $(this).hasClass("asc") ? "desc" : "asc";
 
                     // Retirez toutes les classes "asc" et "desc" des autres colonnes
-                    $("#contactTable th").removeClass("asc desc");
+                    $("#groupeTable th").removeClass("asc desc");
                     // Ajoutez la classe asc ou desc à la colonne actuelle
                     $(this).addClass(direction);
 
                     // Triez les lignes de la table en fonction de la colonne et de la direction
-                    var tbody = $("#contactTable tbody");
+                    var tbody = $("#groupeTable tbody");
                     var rows = tbody.find("tr").toArray().sort(comparer($(this).index(), direction));
                     tbody.empty().append(rows);
                 });
@@ -102,7 +94,7 @@
                 $("#searchInput").on("input", function () {
                     var searchText = $(this).val().toLowerCase();
 
-                    $(".contact-row").each(function () {
+                    $(".groupe-row").each(function () {
                         var rowText = $(this).text().toLowerCase();
                         $(this).toggle(rowText.includes(searchText));
                     });

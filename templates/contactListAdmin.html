@@ -28,31 +28,39 @@
     <table class="table table-striped" id="contactTable">
         <thead>
             <tr>
-                <th data-column="0">Nom <span class="arrow"></span></th>
-                <th data-column="1">Prénom <span class="arrow"></span></th>
-                <th data-column="2">Email <span class="arrow"></span></th>
-                <th data-column="3">Téléphone <span class="arrow"></span></th>
-                <th data-column="4">Date de naissance <span class="arrow"></span></th>
-                <th data-column="5">Groupe <span class="arrow"></span></th>
+                <th data-column="0">ID Contact <span class="arrow"></span></th>
+                <th data-column="1">Nom <span class="arrow"></span></th>
+                <th data-column="2">Prénom <span class="arrow"></span></th>
+                <th data-column="3">Email <span class="arrow"></span></th>
+                <th data-column="4">Téléphone <span class="arrow"></span></th>
+                <th data-column="5">Date de naissance <span class="arrow"></span></th>
+                <th data-column="6">Created Date <span class="arrow"></span></th>
+                <th data-column="7">Updated Date <span class="arrow"></span></th>
+                <th data-column="8">Id Groupe <span class="arrow"></span></th>
+                <th data-column="9">Id User <span class="arrow"></span></th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
             {% for contact in contacts %}
                 <tr class="contact-row">
-                    <td>{{ contact["nom"] }}</td>       <!-- Nom -->
-                    <td>{{ contact["prenom"] }}</td>    <!-- Prénom -->
-                    <td>{{ contact["email"] }}</td>     <!-- Email -->
-                    <td>{{ contact["tel"] }}</td>       <!-- Téléphone -->
-                    <td>{{ contact["date"] }}</td>      <!-- Date de naissance -->
-                    <td>{{ contact["nom_groupe"] }}</td> <!-- Nom Groupe -->
+                    <td>{{ contact[0] }}</td> <!-- ID Contact -->
+                    <td>{{ contact[1] }}</td> <!-- Nom -->
+                    <td>{{ contact[2] }}</td> <!-- Prénom -->
+                    <td>{{ contact[3] }}</td> <!-- Email -->
+                    <td>{{ contact[4] }}</td> <!-- Téléphone -->
+                    <td>{{ contact[5] }}</td> <!-- Date de naissance -->
+                    <td>{{ contact[6] }}</td> <!-- Created Date -->
+                    <td>{{ contact[7] }}</td> <!-- Updated Date -->
+                    <td>{{ contact[8] }}</td> <!-- Id Groupe -->
+                    <td>{{ contact[9] }}</td> <!-- Id User -->
 
                     <!-- Actions -->
                     <td>
-                        <a href="{{ url_for('edit_contact', contactId=contact['id']) }}" class="btn btn-primary btn-sm">
+                        <a href="{{ url_for('edit_contact', contactId=contact[0]) }}" class="btn btn-primary btn-sm">
                             Edit
                         </a>
-                        <a href="{{ url_for('delete_contact', contactId=contact['id']) }}" class="btn btn-danger btn-sm">
+                        <a href="{{ url_for('delete_contact', contactId=contact[0]) }}" class="btn btn-danger btn-sm">
                             Delete
                         </a>
                     </td>

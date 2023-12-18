@@ -5,6 +5,18 @@
 
 {% block content %}
     {% include 'layout/navbar.html' %}
+
+    <!-- Message flash (annonce d'une action ) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="alert alert-{{ messages.0.0 }}" role="alert"> <!-- message.0.0 -> catégorie -->
+                {% for category, message in messages %}
+                    {{ message }} </br> <!-- message -> contenue massage -->
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
     <h1 class="m-5">Edit groupe</h1>
 
     <div class="container mt-5 mb-5">

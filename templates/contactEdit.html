@@ -10,21 +10,35 @@
     <div class="container mb-5 mt-5">
         <!-- Formulaire d'un contact (Avec champs remplie) -->
         <form method="POST" action="{{ url_for('edit_contact', contactId=contact[0]) }}">
-            <label for="nom">Nom:</label>
-            <input type="text" class="form-control" name="nom" value="{{ contact[1] }}" required><br>
-
-            <label for="prenom">Prénom:</label>
-            <input type="text" class="form-control" name="prenom" value="{{ contact[2] }}" required><br>
-
-            <label for="email">E-mail:</label>
-            <input type="email" class="form-control" name="email" value="{{ contact[3] }}" required><br>
-
-            <label for="tel">Téléphone:</label>
-            <input type="tel" class="form-control" name="tel" value="{{ contact[4] }}" required><br>
-
-            <label for="dob">Date de Naissance:</label>
-            <input type="date" class="form-control" name="dob" value="{{ contact[5] }}" required><br>
-
+            <div class="form-group">
+                <label for="nom">Nom:</label>
+                <input type="text" class="form-control" name="nom" value="{{ contact[1] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="prenom">Prénom:</label>
+                <input type="text" class="form-control" name="prenom" value="{{ contact[2] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail:</label>
+                <input type="email" class="form-control" name="email" value="{{ contact[3] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="tel">Téléphone:</label>
+                <input type="tel" class="form-control" name="tel" value="{{ contact[4] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="dob">Date de Naissance:</label>
+                <input type="date" class="form-control" name="dob" value="{{ contact[5] }}" required>
+            </div>
+            <div class="form-group">
+            <label for="groupes">Sélectionnez le groupe:</label>
+            <select class="form-control" id="groupes" name="groupe">
+                <option groupe_selected value="{{ groupe_selected[0] }}">{{ groupe_selected[1] }}</option>
+                {% for groupe in groupes %}
+                    <option value="{{ groupe[0] }}">{{ groupe[1] }}</option>
+                {% endfor %}
+            </select>
+            </div>
             <button type="submit" class="btn btn-primary">Enregistrer</button>
         </form>
         <br>

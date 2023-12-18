@@ -15,9 +15,13 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 @app.get("/")
 def index():
-    return render_template('index.html')
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    else:
+        return render_template('index.html')
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -32,11 +36,14 @@ def login():
 
         if user and user[2] == password:
             session['username'] = username
+            session['id'] = user[0]
+            session['grade'] = user[5]
             flash("Bienvenue "+username, "success")
             return redirect(url_for('index'))
             '''if valid_login(user[0], password):
             session['username'] = username
             return redirect(url_for('index'))'''
+
         else:
             flash("Invalid Username/Password", "danger")
             return render_template('auth/login.html')
@@ -49,212 +56,337 @@ def login():
 def logout():
     if 'username' in session:
         session.pop('username', None)
+        session.pop('id', None)
         flash("Vous avez été deconnecté", "danger")
     return redirect(url_for('login'))
 
 
 @app.get("/contacts")
 def liste_contacts():
-    # Récupération de tout les contacts
-    query = "SELECT * FROM Contact"
-    contacts = recup_bdd(query)
+    if 'id' not in session:
+        return redirect(url_for('login'))
 
-    # Rendu du modèle avec les données récupérées
-    return render_template('contactList.html', contacts=contacts)
+    else:
+        # Récupération de tout les contacts
+        query = "SELECT * FROM Contact WHERE id_user = ?"
+        values = (session['id'],)
+        contacts = recup_bdd(query, values)
+
+        listIds = set(getListIds(contacts, 8))  # set permet d'avoir seulement une occurence par element
+
+        # Récupération des nom de groupe
+        placeholders = ",".join(["?"] * len(listIds))
+        query = "SELECT * FROM Groupe WHERE id_groupe IN ({})".format(placeholders)
+        values = tuple(listIds)
+        groupes = recup_bdd(query, values)
+
+        # Création de la liste à afficher
+        listAffichage = []
+        for contact in contacts:
+            elem = {"id": contact[0],
+                    "nom": contact[1],
+                    "prenom": contact[2],
+                    "email": contact[3],
+                    "tel": contact[4],
+                    "date": contact[5]
+                    }
+            for groupe in groupes:
+                if contact[8] == groupe[0]:
+                    elem["nom_groupe"] = groupe[1]
+
+            listAffichage.append(elem)
+
+        return render_template('contactList.html', contacts=listAffichage)
+
+
+@app.get("/contacts/admin")
+def liste_contacts_admin():
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    elif session['grade'] != 1:
+        flash("Vous n'êtes pas administateur", "danger")
+        return redirect(url_for('index'))
+
+    else:
+        # Récupération de tout les contacts
+        query = "SELECT * FROM Contact"
+        contacts = recup_bdd(query)
+
+        # Rendu du modèle avec les données récupérées
+        return render_template('contactListAdmin.html', contacts=contacts)
 
 
 @app.route("/contacts/new",  methods=['POST', 'GET'])
 def ajouter_contact():
-    if request.method == 'POST':
-        # Récupération des informations du formulaire
-        nom = request.form['nom']
-        prenom = request.form['prenom']
-        email = request.form['email']
-        tel = request.form['tel']
-        date_naissance = request.form['dob']
+    if 'id' not in session:
+        return redirect(url_for('login'))
 
-        # Requête dans la base de données
-        query = '''
-            INSERT INTO Contact (nom, prenom, e_mail, tel, date_naissance, created_date, updated_date, id_user)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
-        values = (nom, prenom, email, tel, date_naissance, now(), now(), 1)
-        action_bdd(query, values)
-
-        # Redirection vers la liste des contacts avec message de confirmation
-        flash("Le contact a été créé", "success")
-        return redirect(url_for('liste_contacts'))
-
-    elif request.method == 'GET':
-        return render_template('contactNew.html')
-
-
-@app.route("/contacts/<int:contactId>/edit", methods=['GET', 'POST'])
-def edit_contact(contactId):
-    # Récupération du contact
-    query = "SELECT * FROM Contact WHERE id_contact = ?"
-    values = (contactId,)
-    contact = recup_bdd(query, values, True)
-
-    if request.method == 'GET':
-        if contact:
-            return render_template('contactEdit.html', contact=contact)
-
-    elif request.method == 'POST':
-        # Vérification de modification des valeurs
-        i = 1
-        doUpdate = False
-        for key in request.form:
-            if request.form[key] != contact[i]:
-                doUpdate = True
-            i += 1
-
-        if doUpdate:
+    else:
+        if request.method == 'POST':
             # Récupération des informations du formulaire
             nom = request.form['nom']
             prenom = request.form['prenom']
             email = request.form['email']
             tel = request.form['tel']
             date_naissance = request.form['dob']
+            groupe = request.form['groupe']
+            if not groupe:
+                groupe = 1
 
             # Requête dans la base de données
             query = '''
-                        UPDATE Contact
-                        SET nom=?, prenom=?, e_mail=?, tel=?, date_naissance=?, updated_date=?
-                        WHERE id_contact=? AND id_user=?
-                    '''
-            values = (nom, prenom, email, tel, date_naissance, now(), contactId, 1)
+                INSERT INTO Contact (nom, prenom, e_mail, tel, date_naissance, created_date, updated_date, id_groupe, id_user)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            values = (nom, prenom, email, tel, date_naissance, now(), now(), groupe, session["id"])
             action_bdd(query, values)
 
-            # Message de confirmation
-            flash("Le contact a été modifié", "warning")
+            # Redirection vers la liste des contacts avec message de confirmation
+            flash("Le contact a été créé", "success")
+            return redirect(url_for('liste_contacts'))
 
-        else:
-            # Message d'erreur
-            flash("Le contact non modifié : Aucune valeur modifié", "warning")
+        elif request.method == 'GET':
+            # Récupération de la liste des groupes
+            query_contacts = "SELECT * FROM Groupe WHERE id_user=?"
+            values = (session['id'],)
+            groupes = recup_bdd(query_contacts, values)
 
-        # Redirection vers la liste des contacts
-        return redirect(url_for('liste_contacts'))
+            return render_template('contactNew.html', groupes=groupes)
 
 
-@app.route("/contacts/<int:contactId>/delete", methods=['GET', 'POST'])
-def delete_contact(contactId):
-    if request.method == 'GET':
+@app.route("/contacts/<int:contactId>/edit", methods=['GET', 'POST'])
+def edit_contact(contactId):
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    else:
         # Récupération du contact
         query = "SELECT * FROM Contact WHERE id_contact = ?"
         values = (contactId,)
         contact = recup_bdd(query, values, True)
 
-        if contact:
-            return render_template('contactDelete.html', contact=contact)
+        if request.method == 'GET':
+            if contact:
+                # Récupération de la liste des groupes
+                query_groupes = "SELECT * FROM Groupe WHERE id_user=?"
+                values = (session['id'],)
+                groupes = recup_bdd(query_groupes, values)
 
-    elif request.method == 'POST':
-        # Requête dans la base de données
-        query = "DELETE FROM Contact WHERE id_contact = ?"
-        values = (contactId,)
-        action_bdd(query, values)
+                query_g_selected = "SELECT * FROM Groupe WHERE id_groupe=?"
+                values = (contact[8],)
+                groupe_selected = recup_bdd(query_g_selected, values, True)
 
-        # Redirection vers la liste des contacts avec message de confirmation
-        flash("Le contact a été supprimé", "danger")
-        return redirect(url_for('liste_contacts'))
+                return render_template('contactEdit.html', contact=contact, groupes=groupes, groupe_selected=groupe_selected)
+
+        elif request.method == 'POST':
+            # Vérification de modification des valeurs
+            i = 1
+            doUpdate = False
+            for key in request.form:
+                if key == "groupe":
+                    if int(request.form[key]) != contact[8]:
+                        doUpdate = True
+                elif request.form[key] != contact[i]:
+                    doUpdate = True
+                i += 1
+
+            if doUpdate:
+                # Récupération des informations du formulaire
+                nom = request.form['nom']
+                prenom = request.form['prenom']
+                email = request.form['email']
+                tel = request.form['tel']
+                date_naissance = request.form['dob']
+                groupe = request.form['groupe']
+
+                print(groupe)
+
+
+                # Requête dans la base de données
+                query = '''
+                            UPDATE Contact
+                            SET nom=?, prenom=?, e_mail=?, tel=?, date_naissance=?, updated_date=?, id_groupe=?
+                            WHERE id_contact=? AND id_user=?
+                        '''
+                values = (nom, prenom, email, tel, date_naissance, now(), groupe, contactId, session['id'])
+                action_bdd(query, values)
+
+                # Message de confirmation
+                flash("Le contact a été modifié", "warning")
+
+            else:
+                # Message d'erreur
+                flash("Le contact non modifié : Aucune valeur modifié", "warning")
+
+            # Redirection vers la liste des contacts
+            return redirect(url_for('liste_contacts'))
+
+
+@app.route("/contacts/<int:contactId>/delete", methods=['GET', 'POST'])
+def delete_contact(contactId):
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    else:
+        if request.method == 'GET':
+            # Récupération du contact
+            query = "SELECT * FROM Contact WHERE id_contact = ?"
+            values = (contactId,)
+            contact = recup_bdd(query, values, True)
+
+            if contact:
+                return render_template('contactDelete.html', contact=contact)
+
+        elif request.method == 'POST':
+            # Requête dans la base de données
+            query = "DELETE FROM Contact WHERE id_contact = ?"
+            values = (contactId,)
+            action_bdd(query, values)
+
+            # Redirection vers la liste des contacts avec message de confirmation
+            flash("Le contact a été supprimé", "danger")
+            return redirect(url_for('liste_contacts'))
 
 
 # Définir la route pour afficher la liste des groupes
 @app.route("/groupes")
 def liste_groupes():
-    # Récupération de tout les groupes
-    query = "SELECT * FROM Groupe"
-    groupes = recup_bdd(query)
+    if 'id' not in session:
+        return redirect(url_for('login'))
 
-    # Rendu du modèle avec les données récupérées
-    return render_template('groupeList.html', groupes=groupes)
+    else:
+        # Récupération de tout les groupes
+        query = "SELECT * FROM Groupe WHERE id_user = ?"
+        values = (session['id'],)
+        groupes = recup_bdd(query, values)
+
+        # Rendu du modèle avec les données récupérées
+        return render_template('groupeList.html', groupes=groupes)
+
+
+# Définir la route pour afficher la liste des groupes ADMIN
+@app.route("/groupes/admin")
+def liste_groupes_admin():
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    elif session['grade'] != 1:
+        flash("Vous n'êtes pas administateur", "danger")
+        return redirect(url_for('index'))
+
+    else:
+        # Récupération de tout les groupes
+        query = "SELECT * FROM Groupe"
+        groupes = recup_bdd(query)
+
+        # Rendu du modèle avec les données récupérées
+        return render_template('groupeListAdmin.html', groupes=groupes)
 
 
 @app.route("/groupes/new",  methods=['POST', 'GET'])
 def ajouter_groupe():
-    if request.method == 'POST':
-        # Récupération des informations du formulaire
-        nom = request.form['nom']
+    if 'id' not in session:
+        return redirect(url_for('login'))
 
-        # Requête dans la base de données
-        query = '''
-            INSERT INTO Groupe (nom_de_groupe, created_date, updated_date, id_user) 
-            VALUES (?, ?, ?, ?)
-        '''
-        values = (nom, now(), now(), 1)
-        action_bdd(query, values)
-
-        # Redirection vers la liste des groupes avec message de confirmation
-        flash("Le groupe a été créé", "success")
-        return redirect(url_for('liste_groupes'))
-
-    elif request.method == 'GET':
-        return render_template('groupeNew.html')
-
-@app.route("/groupes/<int:groupeId>/edit", methods=['GET', 'POST'])
-def edit_groupe(groupeId):
-    # Récupération du groupe
-    query = "SELECT * FROM Groupe WHERE id_groupe = ?"
-    values = (groupeId,)
-    groupe = recup_bdd(query, values, True)
-
-    if request.method == 'GET':
-        if groupe:
-            return render_template('groupeEdit.html', groupe=groupe)
-
-    elif request.method == 'POST':
-        # Vérification de modification des valeurs
-        i = 1
-        doUpdate = False
-        for key in request.form:
-            if request.form[key] != groupe[i]:
-                doUpdate = True
-            i += 1
-
-        if doUpdate:
+    else:
+        if request.method == 'POST':
             # Récupération des informations du formulaire
             nom = request.form['nom']
 
-            # Requête dans la base de données
-            query = '''
-                        UPDATE Groupe
-                        SET nom_de_groupe=?, updated_date=?
-                        WHERE id_groupe=? AND id_user=?
-                    '''
-            values = (nom, now(), groupeId, 1)
-            action_bdd(query, values)
+            # Vérification nom
+            query = "SELECT * FROM Groupe WHERE nom_de_groupe=?"
+            values = (nom,)
+            groupe = recup_bdd(query, values)
 
-            # Message de confirmation
-            flash("Le groupe a été modifié", "warning")
+            if groupe:
+                flash("Le nom existe déjà", "danger")
+                return redirect(url_for('ajouter_groupe'))
 
-        # Redirection vers la liste des groupes
-        return redirect(url_for('liste_groupes'))
+            else:
+                # Requête dans la base de données
+                query_groupe = '''
+                            INSERT INTO Groupe (nom_de_groupe, created_date, updated_date, id_user) 
+                            VALUES (?, ?, ?, ?)
+                        '''
+                values = (nom, now(), now(), session['id'])
+                action_bdd(query_groupe, values)
 
+                # Redirection vers la liste des groupes avec message de confirmation
+                flash("Le groupe a été créé", "success")
+                return redirect(url_for('liste_groupes'))
 
-@app.route("/groupes/<int:groupeId>/delete", methods=['GET', 'POST'])
-def delete_groupe(groupeId):
-    if request.method == 'GET':
-        # Récupération du contact
+        elif request.method == 'GET':
+            return render_template('groupeNew.html')
+
+@app.route("/groupes/<int:groupeId>/edit", methods=['GET', 'POST'])
+def edit_groupe(groupeId):
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    else:
+        # Récupération du groupe
         query = "SELECT * FROM Groupe WHERE id_groupe = ?"
         values = (groupeId,)
         groupe = recup_bdd(query, values, True)
 
-        if groupe:
-            return render_template('groupeDelete.html', groupe=groupe)
+        if request.method == 'GET':
+            if groupe:
+                return render_template('groupeEdit.html', groupe=groupe)
 
-    elif request.method == 'POST':
-        # Requête dans la base de données (suppression du groupe)
-        query = "DELETE FROM Groupe WHERE id_groupe = ?"
-        values = (groupeId,)
-        action_bdd(query, values)
+        elif request.method == 'POST':
+            # Récupération des informations du formulaire
+            nom = request.form['nom']
+            if nom != groupe[1]:
+                # Vérification nom
+                query = "SELECT * FROM Groupe WHERE nom_de_groupe=?"
+                values = (nom,)
+                groupe_exist = recup_bdd(query, values)
 
-        # Requête dans la base de données (suppression des liens avec les contacts)
-        query = "DELETE FROM Appartenir WHERE id_groupe = ?"
-        values = (groupeId,)
-        action_bdd(query, values)
+                if groupe_exist:
+                    flash("Le nom existe déjà", "danger")
+                    return redirect(url_for('edit_groupe', groupeId=groupeId))
 
-        # Redirection vers la liste des groupes avec message de confirmation
-        flash("Le groupe a été supprimé", "danger")
-        return redirect(url_for('liste_groupes'))
+                else:
+                    # Requête dans la base de données
+                    query = '''
+                                UPDATE Groupe
+                                SET nom_de_groupe=?, updated_date=?
+                                WHERE id_groupe=? AND id_user=?
+                            '''
+                    values = (nom, now(), groupeId, 1)
+                    action_bdd(query, values)
+
+                    # Message de confirmation
+                    flash("Le groupe a été modifié", "warning")
+
+            # Redirection vers la liste des groupes
+            return redirect(url_for('liste_groupes'))
+
+
+@app.route("/groupes/<int:groupeId>/delete", methods=['GET', 'POST'])
+def delete_groupe(groupeId):
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    else:
+        if request.method == 'GET':
+            # Récupération du contact
+            query = "SELECT * FROM Groupe WHERE id_groupe = ?"
+            values = (groupeId,)
+            groupe = recup_bdd(query, values, True)
+
+            if groupe:
+                return render_template('groupeDelete.html', groupe=groupe)
+
+        elif request.method == 'POST':
+            # Requête dans la base de données (suppression du groupe)
+            query = "DELETE FROM Groupe WHERE id_groupe = ?"
+            values = (groupeId,)
+            action_bdd(query, values)
+
+            # Redirection vers la liste des groupes avec message de confirmation
+            flash("Le groupe a été supprimé", "danger")
+            return redirect(url_for('liste_groupes'))
 
 
 # Route pour l'export CSV
@@ -410,6 +542,7 @@ def insert_data_into_db(data, table_name):
 def process_csv_data(data, table_name):
     # Utilisez la fonction modifiée pour insérer les données
     insert_data_into_db(data, table_name)
+
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True)
