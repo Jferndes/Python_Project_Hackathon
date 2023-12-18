@@ -36,9 +36,9 @@ def ajouter_contact():
         # Requête dans la base de données
         query = '''
             INSERT INTO Contact (nom, prenom, e_mail, tel, date_naissance, photo_profil, created_date, updated_date)
-            VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')
-        '''.format(nom, prenom, email, tel, date_naissance, photo, now(), now())
-        action_bdd(query)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+        values = (nom, prenom, email, tel, date_naissance, photo, now(), now())
+        action_bdd(query, values)
 
         # Redirection vers la liste des contacts avec message de confirmation
         flash("Le contact a été créé", "success")
@@ -51,8 +51,9 @@ def ajouter_contact():
 @app.route("/contacts/<int:contactId>/edit", methods=['GET', 'POST'])
 def edit_contact(contactId):
     # Récupération du contact
-    query = "SELECT * FROM Contact WHERE id_contact = {}".format(contactId)
-    contact = recup_bdd(query, True)
+    query = "SELECT * FROM Contact WHERE id_contact = ?"
+    values = (contactId,)
+    contact = recup_bdd(query, values, True)
 
     if request.method == 'GET':
         if contact:
@@ -79,13 +80,18 @@ def edit_contact(contactId):
             # Requête dans la base de données
             query = '''
                         UPDATE Contact
-                        SET nom='{}', prenom='{}', e_mail='{}', tel='{}', date_naissance='{}', photo_profil='{}', updated_date='{}'
-                        WHERE id_contact='{}'
-                    '''.format(nom, prenom, email, tel, date_naissance, photo, now(), contactId)
-            action_bdd(query)
+                        SET nom=?, prenom=?, e_mail=?, tel=?, date_naissance=?, photo_profil=?, updated_date=?
+                        WHERE id_contact=?
+                    '''
+            values = (nom, prenom, email, tel, date_naissance, photo, now(), contactId)
+            action_bdd(query, values)
 
             # Message de confirmation
             flash("Le contact a été modifié", "warning")
+
+        else:
+            # Message d'erreur
+            flash("Le contact non modifié : Aucune valeur modifié", "warning")
 
         # Redirection vers la liste des contacts
         return redirect(url_for('liste_contacts'))
@@ -95,16 +101,18 @@ def edit_contact(contactId):
 def delete_contact(contactId):
     if request.method == 'GET':
         # Récupération du contact
-        query = "SELECT * FROM Contact WHERE id_contact = '{}'".format(contactId)
-        contact = recup_bdd(query, True)
+        query = "SELECT * FROM Contact WHERE id_contact = ?"
+        values = (contactId,)
+        contact = recup_bdd(query, values, True)
 
         if contact:
             return render_template('contactDelete.html', contact=contact)
 
     elif request.method == 'POST':
         # Requête dans la base de données
-        query = "DELETE FROM Contact WHERE id_contact = '{}'".format(contactId)
-        action_bdd(query)
+        query = "DELETE FROM Contact WHERE id_contact = ?"
+        values = (contactId,)
+        action_bdd(query, values)
 
         # Redirection vers la liste des contacts avec message de confirmation
         flash("Le contact a été supprimé", "danger")
@@ -132,9 +140,10 @@ def ajouter_groupe():
         # Requête dans la base de données
         query = '''
             INSERT INTO Groupe (nom_de_groupe, photo_groupe, created_date, updated_date) 
-            VALUES ('{}', '{}', '{}', '{}')
-        '''.format(nom, photo, now(), now())
-        action_bdd(query)
+            VALUES (?, ?, ?, ?)
+        '''
+        values = (nom, photo, now(), now())
+        action_bdd(query, values)
 
         # Redirection vers la liste des groupes avec message de confirmation
         flash("Le groupe a été créé", "success")
@@ -146,8 +155,9 @@ def ajouter_groupe():
 @app.route("/groupes/<int:groupeId>/edit", methods=['GET', 'POST'])
 def edit_groupe(groupeId):
     # Récupération du groupe
-    query = "SELECT * FROM Groupe WHERE id_groupe = {}".format(groupeId)
-    groupe = recup_bdd(query, True)
+    query = "SELECT * FROM Groupe WHERE id_groupe = ?"
+    values = (groupeId,)
+    groupe = recup_bdd(query, values, True)
 
     if request.method == 'GET':
         if groupe:
@@ -170,10 +180,11 @@ def edit_groupe(groupeId):
             # Requête dans la base de données
             query = '''
                         UPDATE Groupe
-                        SET nom='{}', photo_groupe='{}', updated_date='{}'
-                        WHERE id_groupe='{}'
-                    '''.format(nom, photo, now(), groupeId)
-            action_bdd(query)
+                        SET nom_de_groupe=?, photo_groupe=?, updated_date=?
+                        WHERE id_groupe=?
+                    '''
+            values = (nom, photo, now(), groupeId)
+            action_bdd(query, values)
 
             # Message de confirmation
             flash("Le groupe a été modifié", "warning")
@@ -186,20 +197,23 @@ def edit_groupe(groupeId):
 def delete_groupe(groupeId):
     if request.method == 'GET':
         # Récupération du contact
-        query = "SELECT * FROM Groupe WHERE id_groupe = '{}'".format(groupeId)
-        groupe = recup_bdd(query, True)
+        query = "SELECT * FROM Groupe WHERE id_groupe = ?"
+        values = (groupeId,)
+        groupe = recup_bdd(query, values, True)
 
         if groupe:
             return render_template('groupeDelete.html', groupe=groupe)
 
     elif request.method == 'POST':
         # Requête dans la base de données (suppression du groupe)
-        query = "DELETE FROM Groupe WHERE id_groupe = '{}'".format(groupeId)
-        action_bdd(query)
+        query = "DELETE FROM Groupe WHERE id_groupe = ?"
+        values = (groupeId,)
+        action_bdd(query, values)
 
         # Requête dans la base de données (suppression des liens avec les contacts)
-        query = "DELETE FROM Appartenir WHERE id_groupe = '{}'".format(groupeId)
-        action_bdd(query)
+        query = "DELETE FROM Appartenir WHERE id_groupe = ?"
+        values = (groupeId,)
+        action_bdd(query, values)
 
         # Redirection vers la liste des groupes avec message de confirmation
         flash("Le groupe a été supprimé", "danger")

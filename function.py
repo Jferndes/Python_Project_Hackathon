@@ -13,10 +13,13 @@ def connect_db():
 
 
 # Fonction pour pour récupérer des données dans la base de données
-def recup_bdd(query: str, doOne: bool = False):
+def recup_bdd(query: str, values=None, doOne: bool = False):
     connection = connect_db()
     cursor = connection.cursor()
-    cursor.execute(query)
+    if values:
+        cursor.execute(query, values)
+    else:
+        cursor.execute(query)
 
     if doOne:
         result = cursor.fetchone()
@@ -27,9 +30,9 @@ def recup_bdd(query: str, doOne: bool = False):
     return result
 
 # Fonction pour faire une action (INSERT, UPDATE, DELETE) dans la base de données
-def action_bdd(query: str):
+def action_bdd(query: str, values):
     connection = connect_db()
     cursor = connection.cursor()
-    cursor.execute(query)
+    cursor.execute(query, values)
     connection.commit()
     connection.close()
