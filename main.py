@@ -37,6 +37,10 @@ def login():
         values = (username,)
         user = recup_bdd(query, values, doOne=True)
 
+        if not user:
+            flash("Invalid Username/Password", "danger")
+            return redirect(url_for('login'))
+
         if valid_login(user[2], password):
             session['username'] = username
             session['id'] = user[0]
